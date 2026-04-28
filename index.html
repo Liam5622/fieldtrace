@@ -321,6 +321,7 @@
 
   /* ══ MOBILE RESPONSIVE ══════════════════════════════════════════════════ */
   @media (max-width: 768px) {
+    .mobile-back-btn { display: inline-flex !important; }
     /* Sidebar hidden by default on mobile */
     #sidebar {
       position: fixed; left: -260px; top: 0; height: 100vh;
@@ -888,7 +889,8 @@
   <div class="view" id="view-folder">
     <div class="fo-hero" id="fo-hero">
       <div class="fo-hero-glow" id="fo-glow"></div>
-      <div class="fo-hero-inner">
+      <button onclick="goHome()" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;color:#fff;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Georgia,serif;z-index:10;">← Dashboard</button>
+      <div class="fo-hero-inner" style="margin-top:36px;">
         <div class="fo-big-icon" id="fo-big-icon">📁</div>
         <div>
           <div class="fo-subtitle" id="fo-subtitle"></div>
@@ -913,7 +915,10 @@
   <!-- SECTION VIEW -->
   <div class="view" id="view-section">
     <div class="sec-header">
-      <div class="breadcrumb" id="breadcrumb"></div>
+      <div style="display:flex;align-items:center;gap:8px;width:100%;">
+        <button class="mobile-back-btn" onclick="mobileGoBack()" style="display:none;background:#f0f0f0;border:1px solid #ddd;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#333;cursor:pointer;white-space:nowrap;font-family:Georgia,serif;">← Back</button>
+        <div class="breadcrumb" id="breadcrumb" style="flex:1;"></div>
+      </div>
       <div class="sec-tools" id="sec-tools"></div>
     </div>
     <div class="sec-content" id="sec-content"></div>
@@ -1415,12 +1420,38 @@ function toggleFolder(folder) {
 }
 
 function openTasksSection() {
-  activeSection = 'tasks_cal';
-  activeFolder  = 'tasks';
+  activeFolder = 'tasks';
   folderOpen['tasks'] = true;
-  showView('section');
-  renderTasksCalendar();
+  // On mobile show folder overview; on desktop go straight to calendar
+  if (window.innerWidth <= 768) {
+    showView('folder');
+    renderTasksFolderOverview();
+  } else {
+    activeSection = 'tasks_cal';
+    showView('section');
+    renderTasksCalendar();
+  }
   updateSidebar();
+}
+
+function renderTasksFolderOverview() {
+  const el = document.getElementById('view-folder');
+  if (!el) return;
+  el.innerHTML =
+    '<div style="background:#111;padding:50px 20px 24px;position:relative;">'
+    + '<button onclick="goHome()" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;color:#fff;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">← Dashboard</button>'
+    + '<div style="font-size:42px;margin-bottom:8px;">📋</div>'
+    + '<div style="font-size:22px;font-weight:900;color:#c078e0;">Daily Operations Tracker</div>'
+    + '<div style="font-size:13px;color:#aaa;margin-top:6px;">Farm Operations · Task Management</div>'
+    + '</div>'
+    + '<div style="padding:20px 16px;background:#f5f5f5;">'
+    + '<div style="font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;">Select a section</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px;">'
+    + makeMobileNavCard('📅', 'Work Calendar',          'Track tasks and daily operations',     "openSection('tasks_cal','tasks')",  '#6a1b9a')
+    + makeMobileNavCard('📝', 'Task List',              'View and manage all tasks with dates',  "openTasksListSection()",            '#6a1b9a')
+    + makeMobileNavCard('📊', 'Weekly Summary',         'Auto-generated weekly report',          "openTasksWeeklySection()",          '#6a1b9a')
+    + makeMobileNavCard('📋', 'Daily Completion Report','Fill in end-of-day manager report',     "openTasksReportSection()",          '#6a1b9a')
+    + '</div></div>';
 }
 
 function openTasksListSection() {
@@ -4847,6 +4878,31 @@ function renderSprayAppHistory() {
 
 function openSprayLogSection() { openSection('spray_log', 'spray'); }
 
+
+
+function mobileGoBack() {
+  if (activeFolder) {
+    if (activeFolder === 'tasks') {
+      renderTasksFolderOverview();
+      showView('folder');
+    } else {
+      openFolder(activeFolder);
+    }
+    activeSection = null;
+  } else {
+    goHome();
+  }
+  updateSidebar();
+}
+
+function makeMobileNavCard(icon, title, desc, onclick, color) {
+  return '<div onclick="' + onclick + '" style="background:#fff;border:2px solid #e0e0e0;border-left:5px solid '+color+';border-radius:10px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;">'
+    + '<div style="font-size:28px;">'+icon+'</div>'
+    + '<div><div style="font-size:15px;font-weight:800;color:#111;">'+title+'</div>'
+    + '<div style="font-size:12px;color:#666;margin-top:2px;">'+desc+'</div></div>'
+    + '<div style="margin-left:auto;font-size:18px;color:#ccc;">›</div>'
+    + '</div>';
+}
 
 // ══ INIT ══════════════════════════════════════════════════════════════════════
 loadDB();
