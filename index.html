@@ -3577,13 +3577,8 @@ function renderTasksList() {
       </div>
     </div>`;
 
-  // Also collect ALL dates that have a report even if no tasks (for filter=all)
-  const allDatesWithData = new Set([
-    ...Object.keys(byDate),
-    ...(filter==='all' ? Object.keys(db.tasks_data||{}).filter(ds=>getDailyReport(ds).summary) : [])
-  ]);
-
-  Array.from(allDatesWithData).sort().forEach(ds => {
+  // Only show dates that have manual tasks — no daily report-only dates
+  Array.from(Object.keys(byDate)).sort().forEach(ds => {
     const dayTasks = byDate[ds] || [];
     const dayDone  = dayTasks.filter(t => t.done).length;
     const isToday  = ds === today;
@@ -3621,45 +3616,7 @@ function renderTasksList() {
             </div>`).join('')}
         </div>` : ''}
 
-        <!-- Daily Completion Report card -->
-        <div style="background:${hasReport?'rgba(212,184,64,0.06)':'rgba(255,255,255,0.02)'};border:1px solid ${hasReport?'rgba(212,184,64,0.25)':'rgba(255,255,255,0.07)'};border-radius:10px;padding:14px 16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:14px;">📋</span>
-              <span style="font-size:12px;font-weight:700;color:${hasReport?'#d4b840':'#5a4a6a'};text-transform:uppercase;letter-spacing:1px;">Manager Daily Report</span>
-              ${hasReport?`<span style="font-size:10px;background:rgba(212,184,64,0.15);border:1px solid rgba(212,184,64,0.3);border-radius:10px;padding:1px 8px;color:#d4b840;">Saved ${report.savedAt||''}</span>`:''}
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
-            <div style="grid-column:1/-1;">
-              <label style="font-size:10px;color:#222;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">What Got Done Today</label>
-              <textarea id="dr-summary-${ds}" rows="3" placeholder="Describe what was accomplished today…"
-                style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#111;font-size:13px;outline:none;font-family:Georgia,serif;resize:vertical;">${escHtml(report.summary||'')}</textarea>
-            </div>
-            <div>
-              <label style="font-size:10px;color:#222;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Number of Workers</label>
-              <input id="dr-workers-${ds}" type="number" min="0" placeholder="0" value="${report.workers||''}"
-                style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#111;font-size:13px;outline:none;font-family:Georgia,serif;">
-            </div>
-            <div>
-              <label style="font-size:10px;color:#222;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Total Hours Worked</label>
-              <input id="dr-hours-${ds}" type="number" min="0" step="0.5" placeholder="0" value="${report.hoursWorked||''}"
-                style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#111;font-size:13px;outline:none;font-family:Georgia,serif;">
-            </div>
-            <div>
-              <label style="font-size:10px;color:#222;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Manager / Submitted By</label>
-              <input id="dr-manager-${ds}" type="text" placeholder="Manager name" value="${escHtml(report.manager||'')}"
-                style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#111;font-size:13px;outline:none;font-family:Georgia,serif;">
-            </div>
-            <div style="grid-column:2/-1;">
-              <label style="font-size:10px;color:#222;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Additional Notes</label>
-              <input id="dr-notes-${ds}" type="text" placeholder="Any issues, weather, supply notes…" value="${escHtml(report.notes||'')}"
-                style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#111;font-size:13px;outline:none;font-family:Georgia,serif;">
-            </div>
-          </div>
-          <button id="dr-save-btn-${ds}" onclick="tSaveDayReport('${ds}')"
-            style="background:#6a30a0;border:none;border-radius:6px;padding:7px 18px;color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Georgia,serif;">Save Report</button>
-        </div>
+
       </div>`;
   });
 
