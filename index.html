@@ -38,10 +38,10 @@
     flex-shrink: 0;
   }
   #logo-area h1 { font-size: 22px; font-weight: 700; color: #2e6020; letter-spacing: 1px; }
-  #logo-area p  { font-size: 11px; color: #7a8a60; margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
+  #logo-area p  { font-size: 11px; color: #333; margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
 
   .sidebar-label {
-    font-size: 9px; color: #6a7a58; text-transform: uppercase;
+    font-size: 9px; color: #333; text-transform: uppercase;
     letter-spacing: 2px; padding: 10px 16px 3px;
   }
   .home-btn {
@@ -50,7 +50,7 @@
     padding: 8px 12px;
     background: transparent; border: 1px solid transparent;
     border-radius: 7px; cursor: pointer;
-    color: #5a6a48; font-size: 12.5px; font-family: Georgia, serif;
+    color: #333; font-size: 12.5px; font-family: Georgia, serif;
     text-align: left; transition: all 0.15s;
   }
   .home-btn.active { background: rgba(120,150,80,0.12); border-color: rgba(120,150,80,0.25); color: #2e6020; }
@@ -77,7 +77,7 @@
     display: flex; align-items: center; transition: background 0.15s;
     font-family: Georgia, serif;
   }
-  .folder-arrow:hover { background: rgba(255,255,255,0.06); }
+  .folder-arrow:hover { background: #e0e0e0; }
 
   /* section list */
   .section-list { padding: 2px 10px 4px; overflow: hidden; }
@@ -86,7 +86,7 @@
     display: block; width: 100%; padding: 6px 10px 6px 20px; margin-bottom: 2px;
     background: transparent; border: 1px solid transparent;
     border-radius: 6px; cursor: pointer;
-    color: #6a7a58; font-size: 12px; font-family: Georgia, serif;
+    color: #333; font-size: 12px; font-family: Georgia, serif;
     text-align: left; transition: all 0.13s;
   }
   .overview-btn.active { background: rgba(200,160,50,0.1); border-color: rgba(200,160,50,0.2); color: #d4b840; }
@@ -95,14 +95,14 @@
     width: 100%; padding: 7px 8px 7px 20px; margin-bottom: 2px;
     background: transparent; border: 1px solid transparent;
     border-radius: 6px; cursor: pointer;
-    color: #6a7a58; font-size: 12px; font-family: Georgia, serif;
+    color: #333; font-size: 12px; font-family: Georgia, serif;
     text-align: left; transition: all 0.13s;
   }
   .sec-btn.active { color: #111; }
   .badge {
     border-radius: 10px; padding: 1px 5px; font-size: 10px; margin-left: 3px;
   }
-  .badge-count { background: rgba(255,255,255,0.08); color: #6a7a58; }
+  .badge-count { background: rgba(255,255,255,0.08); color: #333; }
   .badge-issue { background: #8b2a2a; color: #ffaaaa; }
 
   #sidebar-footer {
@@ -112,7 +112,7 @@
   }
   #sidebar-footer .ft-label { font-size: 9px; color: #3a4a30; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
   .ft-row { font-size: 10.5px; color: #4a5a38; display: flex; justify-content: space-between; margin-bottom: 3px; }
-  .ft-row span:last-child { color: #8aaa60; }
+  .ft-row span:last-child { color: #1b5e20; }
 
   /* ── MAIN ── */
   #main {
@@ -127,7 +127,7 @@
   /* HOME */
   #view-home { padding: 40px 44px; background: #ffffff; min-height: 100%; }
   #view-home h2 { font-size: 36px; font-weight: 900; color: #1a2a10; margin-bottom: 8px; letter-spacing: -0.5px; }
-  #view-home .sub { font-size: 14px; color: #556644; margin-bottom: 36px; max-width: 560px; line-height: 1.6; }
+  #view-home .sub { font-size: 14px; color: #333; margin-bottom: 36px; max-width: 560px; line-height: 1.6; }
   .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 820px; }
   .home-card {
     background: #ffffff;
@@ -193,7 +193,7 @@
   .fo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.13); }
   .fo-card .fc-icon  { font-size: 26px; margin-bottom: 7px; }
   .fo-card .fc-title { font-size: 13.5px; font-weight: 700; color: #1a2a10; margin-bottom: 4px; }
-  .fo-card .fc-desc  { font-size: 11px; color: #556644; line-height: 1.5; margin-bottom: 11px; }
+  .fo-card .fc-desc  { font-size: 11px; color: #333; line-height: 1.5; margin-bottom: 11px; }
   .fo-card .fc-foot  { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
   .fc-flag { background: #8b2a2a; border-radius: 20px; padding: 2px 8px; font-size: 11px; color: #ffaaaa; font-weight: 600; float: right; }
 
@@ -289,7 +289,7 @@
     outline: none; font-family: Georgia, serif; resize: vertical;
   }
   .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
-    border-color: #4a8a30; background: #fff; box-shadow: 0 0 0 3px rgba(74,138,48,0.12);
+    border-color: #1b5e20; background: #fff; box-shadow: 0 0 0 3px rgba(74,138,48,0.12);
   }
   .form-field select option { background: #fff; color: #1a1a1a; }
   .form-field input[type="date"]::-webkit-calendar-picker-indicator,
@@ -486,8 +486,8 @@
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
   }
-  .vt-title { font-size: 18px; font-weight: 800; color: #d8eaae; }
-  .vt-subtitle { font-size: 12px; color: #5a6a48; margin-top: 3px; }
+  .vt-title { font-size: 18px; font-weight: 800; color: #111; }
+  .vt-subtitle { font-size: 12px; color: #333; margin-top: 3px; }
   .vt-source-note {
     font-size: 11px; color: #333;
     background: rgba(126,200,96,0.08);
@@ -504,9 +504,9 @@
     background: rgba(30,38,22,0.85); padding: 16px 20px; text-align: center;
   }
   .vt-banner-val { font-size: 26px; font-weight: 800; }
-  .vt-banner-lbl { font-size: 10px; color: #5a6a48; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .vt-banner-lbl { font-size: 10px; color: #333; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
   .vt-section-label {
-    font-size: 10px; color: #5a6a48; text-transform: uppercase;
+    font-size: 10px; color: #333; text-transform: uppercase;
     letter-spacing: 2px; margin-bottom: 10px;
   }
   .vt-table {
@@ -519,19 +519,19 @@
     white-space: nowrap; font-weight: 600;
   }
   .vt-table th.r { text-align: right; }
-  .vt-table td { padding: 10px 12px; border-bottom: 1px solid rgba(120,140,80,0.08); color: #d8eaae; vertical-align: middle; }
+  .vt-table td { padding: 10px 12px; border-bottom: 1px solid rgba(120,140,80,0.08); color: #111; vertical-align: middle; }
   .vt-table td.r { text-align: right; }
   .vt-table tr:hover td { background: rgba(126,200,96,0.04); }
   .vt-table tr.grand-total td {
     border-top: 2px solid rgba(126,200,96,0.3); border-bottom: none;
     font-weight: 800; color: #2e7d32; font-size: 13.5px; padding-top: 12px;
   }
-  .vt-variety-name { font-weight: 700; color: #d8eaae; }
+  .vt-variety-name { font-weight: 700; color: #111; }
   .vt-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
-  .vt-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
-  .vt-bar-fill { height: 100%; border-radius: 3px; background: #5a7c2e; transition: width 0.4s; }
+  .vt-bar-bg { flex: 1; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+  .vt-bar-fill { height: 100%; border-radius: 3px; background: #1b5e20; transition: width 0.4s; }
   .vt-pct { font-size: 11px; color: #333; min-width: 34px; text-align: right; }
-  .vt-day-row { font-size: 11.5px; color: #7a8a60; }
+  .vt-day-row { font-size: 11.5px; color: #333; }
   .vt-day-chip {
     display: inline-block; background: rgba(126,200,96,0.08);
     border: 1px solid rgba(126,200,96,0.15); border-radius: 4px;
@@ -541,7 +541,7 @@
     text-align: center; padding: 60px 20px; color: #3a4a30;
   }
   .vt-no-data .ni { font-size: 44px; margin-bottom: 12px; }
-  .vt-no-data .nt { font-size: 15px; color: #5a6a48; }
+  .vt-no-data .nt { font-size: 15px; color: #333; }
   .vt-no-data .ns { font-size: 12px; margin-top: 6px; }
 
   /* ── DAILY HARVEST LOG SPECIAL STYLES ── */
@@ -595,7 +595,7 @@
     text-transform: uppercase; letter-spacing: 1px;
     padding: 7px 12px; border-bottom: 1px solid rgba(126,200,96,0.2);
   }
-  .detail-variety-table td { padding: 8px 12px; border-bottom: 1px solid rgba(120,140,80,0.08); color: #d8eaae; }
+  .detail-variety-table td { padding: 8px 12px; border-bottom: 1px solid rgba(120,140,80,0.08); color: #111; }
   .detail-variety-table tr.totals-row td {
     border-top: 2px solid rgba(126,200,96,0.3); border-bottom: none;
     font-weight: 700; color: #2e6020;
@@ -603,17 +603,17 @@
 
   /* list view daily card */
   .dhl-list-card {
-    background: rgba(255,255,255,0.06);
+    background: #e0e0e0;
     border: 1px solid rgba(120,140,80,0.14);
     border-left: 3px solid #5a7c2e;
     border-radius: 8px; padding: 12px 16px;
     cursor: pointer; transition: background 0.14s;
     margin-bottom: 8px;
   }
-  .dhl-list-card:hover { background: rgba(255,255,255,0.06); }
+  .dhl-list-card:hover { background: #e0e0e0; }
   .dhl-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-  .dhl-card-date { font-size: 15px; font-weight: 700; color: #d8eaae; }
-  .dhl-card-field { font-size: 12px; color: #7a8a60; margin-top: 2px; }
+  .dhl-card-date { font-size: 15px; font-weight: 700; color: #111; }
+  .dhl-card-field { font-size: 12px; color: #333; margin-top: 2px; }
   .dhl-summary-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
   .dhl-chip {
     background: rgba(255,255,255,0.09); border: 1px solid rgba(120,140,80,0.2);
@@ -660,7 +660,7 @@
         <span class="f-icon" id="tasks-icon">📋</span>
         <div>
           <div class="f-title" style="color:#c078e0;">Daily Operations Tracker</div>
-          <div class="f-sub" id="tasks-sub" style="color:#7a30a8aa;">0 tasks · <span style="color:#70b060">all clear ✓</span></div>
+          <div class="f-sub" id="tasks-sub" style="color:#7a30a8aa;">0 tasks · <span style="color:#1b5e20">all clear ✓</span></div>
         </div>
       </button>
       <button class="folder-arrow" id="tasks-arrow" style="color:#c078e0cc;" onclick="toggleFolder('tasks')">▼</button>
@@ -680,7 +680,7 @@
         <span class="f-icon" id="gap-icon">📁</span>
         <div>
           <div class="f-title" style="color:#d4b840;">GAP Certification</div>
-          <div class="f-sub" id="gap-sub" style="color:#a09040cc;">0 records · <span style="color:#70b060">all clear ✓</span></div>
+          <div class="f-sub" id="gap-sub" style="color:#a09040cc;">0 records · <span style="color:#1b5e20">all clear ✓</span></div>
         </div>
       </button>
       <button class="folder-arrow" id="gap-arrow" style="color:#d4b840cc;" onclick="toggleFolder('gap')">▼</button>
@@ -704,7 +704,7 @@
         <span class="f-icon" id="emp-icon">🗂️</span>
         <div>
           <div class="f-title" style="color:#60a8d0;">Employee Records</div>
-          <div class="f-sub" id="emp-sub" style="color:#60a8d099;">0 records · <span style="color:#70b060">all clear ✓</span></div>
+          <div class="f-sub" id="emp-sub" style="color:#60a8d099;">0 records · <span style="color:#1b5e20">all clear ✓</span></div>
         </div>
       </button>
       <button class="folder-arrow" id="emp-arrow" style="color:#60a8d0cc;" onclick="toggleFolder('emp')">▼</button>
@@ -727,7 +727,7 @@
         <span class="f-icon" id="harv-icon">🌾</span>
         <div>
           <div class="f-title" style="color:#2e7d32;">Harvest Records</div>
-          <div class="f-sub" id="harv-sub" style="color:#2e7d3299;">0 records · <span style="color:#70b060">all clear ✓</span></div>
+          <div class="f-sub" id="harv-sub" style="color:#2e7d3299;">0 records · <span style="color:#1b5e20">all clear ✓</span></div>
         </div>
       </button>
       <button class="folder-arrow" id="harv-arrow" style="color:#2e7d32cc;" onclick="toggleFolder('harv')">▼</button>
@@ -749,7 +749,7 @@
         <span class="f-icon" id="fert-icon">🌱</span>
         <div>
           <div class="f-title" style="color:#2e7d32;">Fertilizer Records</div>
-          <div class="f-sub" id="fert-sub" style="color:#207840aa;">0 records · <span style="color:#70b060">all clear ✓</span></div>
+          <div class="f-sub" id="fert-sub" style="color:#207840aa;">0 records · <span style="color:#1b5e20">all clear ✓</span></div>
         </div>
       </button>
       <button class="folder-arrow" id="fert-arrow" style="color:#2e7d32cc;" onclick="toggleFolder('fert')">▼</button>
@@ -770,7 +770,7 @@
         <span class="f-icon" id="spray-icon">💧</span>
         <div>
           <div class="f-title" style="color:#4aabcc;">Spray Protocols</div>
-          <div class="f-sub" id="spray-sub" style="color:#0e6b8aaa;">0 records · <span style="color:#70b060">all clear ✓</span></div>
+          <div class="f-sub" id="spray-sub" style="color:#0e6b8aaa;">0 records · <span style="color:#1b5e20">all clear ✓</span></div>
         </div>
       </button>
       <button class="folder-arrow" id="spray-arrow" style="color:#4aabcccc;" onclick="toggleFolder('spray')">▼</button>
@@ -820,22 +820,22 @@
           <span style="color:#7a30a8;">Open →</span>
         </div>
       </div>
-      <div class="home-card home-card-full" style="border-color:#5a9a30;background:#ffffff;border-top:6px solid #5a9a30;" onclick="openFolder('harv')"
+      <div class="home-card home-card-full" style="border-color:#1b5e20;background:#ffffff;border-top:6px solid #5a9a30;" onclick="openFolder('harv')"
            onmouseover="this.style.background='#f5fbf0'" onmouseout="this.style.background='#ffffff'">
         <div class="hc-inner">
           <div style="font-size:44px;">🌾</div>
           <div class="hc-text">
-            <div class="hc-title" style="color:#3a7020;">Harvest Records</div>
+            <div class="hc-title" style="color:#1b5e20;">Harvest Records</div>
             <div class="hc-desc" style="color:#666;margin-bottom:0;">Detailed harvest tracking — daily logs, varieties, weather conditions, crew size, pounds &amp; boxes picked per session.</div>
           </div>
           <div class="hc-stats">
             <span style="color:#2e7d32;" id="hc-harv-recs" style="color:#555;">0 records</span>
             <span style="color:#ff8a8a;display:none;" id="hc-harv-issues"></span>
-            <span style="color:#3a7020;">Open →</span>
+            <span style="color:#1b5e20;">Open →</span>
           </div>
         </div>
       </div>
-      <div class="home-card" style="border-color:#40a860;background:#ffffff;border-top:6px solid #40a860;" onclick="openFolder('fert')"
+      <div class="home-card" style="border-color:#1b5e20;background:#ffffff;border-top:6px solid #40a860;" onclick="openFolder('fert')"
            onmouseover="this.style.background='#f0fbf4'" onmouseout="this.style.background='#ffffff'">
         <div class="hc-icon">🌱</div>
         <div class="hc-title" style="color:#207840;">Fertilizer Records</div>
@@ -1502,7 +1502,7 @@ function updateSidebar() {
     subEl.innerHTML = recs + ' records · ' +
       (issues > 0
         ? '<span style="color:#ff9a9a">'+issues+' flagged ⚠</span>'
-        : '<span style="color:#70b060">all clear ✓</span>');
+        : '<span style="color:#1b5e20">all clear ✓</span>');
 
     // folder row active style
     const row = document.getElementById(f+'-folder-row');
@@ -1527,7 +1527,7 @@ function updateSidebar() {
   (function(){
     const tc=tasksTotalCount(), tp=tasksPendingCount(), isAct=(activeFolder==='tasks');
     const sub=document.getElementById('tasks-sub');
-    if(sub) sub.innerHTML=tc+' tasks · '+(tp>0?'<span style="color:#ff9a9a">'+tp+' pending</span>':'<span style="color:#70b060">all done ✓</span>');
+    if(sub) sub.innerHTML=tc+' tasks · '+(tp>0?'<span style="color:#ff9a9a">'+tp+' pending</span>':'<span style="color:#1b5e20">all done ✓</span>');
     const row=document.getElementById('tasks-folder-row');
     if(row){row.style.borderColor=isAct?'#c078e0cc':'#c078e055';row.style.background=isAct?'linear-gradient(135deg,rgba(180,120,220,0.25),rgba(180,120,220,0.12))':'linear-gradient(135deg,rgba(180,120,220,0.15),rgba(180,120,220,0.06))';}
     const arr=document.getElementById('tasks-arrow');
@@ -1756,7 +1756,7 @@ function renderSeasonSummary() {
     const barColor = i===0 ? '#2e7d32' : i===1 ? '#1b5e20' : i===2 ? '#155724' : '#0a3a15';
     return `<tr>
       <td style="font-weight:600;color:#111;">${escHtml(v.name)}</td>
-      <td class="r" style="font-weight:700;color:#2e7d32;">${v.lbs.toFixed(1)}</td>
+      <td class="r" style="font-weight:800;color:#111;">${v.lbs.toFixed(1)}</td>
       <td class="r">${(v.boxes20lb||0).toFixed(0)}</td>
       <td class="r">${(v.flats||0).toFixed(0)}</td>
       <td class="r">${v.days}</td>
@@ -1950,13 +1950,13 @@ function renderVarietyTracker() {
           <div class="vt-variety-name">${escHtml(v.name)}</div>
           <div style="margin-top:4px;">${dayChips}${v.days.length > 5 ? `<span class="vt-day-chip" style="color:#333;">+${v.days.length-5} more</span>` : ''}</div>
         </td>
-        <td class="r" style="font-weight:700;color:#2e7d32;font-size:14px;">${v.totalLbs.toFixed(1)}</td>
+        <td class="r" style="font-weight:800;color:#111;font-size:14px;">${v.totalLbs.toFixed(1)}</td>
         <td class="r">${v.totalBoxes.toFixed(0)}</td>
         <td class="r">${v.days.length}</td>
         <td class="r">${avgLbsPerDay}</td>
         <td>
           <div class="vt-bar-wrap">
-            <div class="vt-bar-bg"><div class="vt-bar-fill" style="width:${barW}%;background:${i===0?'#7ec860':i===1?'#5a9c40':i===2?'#3a7c2e':'#2a5c1e'};"></div></div>
+            <div class="vt-bar-bg"><div class="vt-bar-fill" style="width:${barW}%;background:${i===0?'#2e7d32':i===1?'#1b5e20':i===2?'#155724':'#0a3a15'};"></div></div>
             <span class="vt-pct">${pct}%</span>
           </div>
         </td>
@@ -2575,15 +2575,15 @@ function renderBreadcrumb(mode) {
     const overdue = recs.filter(r => ISSUE_STATUSES.includes(r.status)).length;
     const recent  = recs.filter(r => { const d=r.date||r.hireDate||r.weekOf; return d && (new Date()-new Date(d))/86400000<=7; }).length;
     html += `<span class="bc-current">${meta ? meta.label : ''}</span>
-      <span class="bc-sub">${recs.length} records · ${recent} this week · ${overdue > 0 ? '<span style="color:#ff8a8a">'+overdue+' need attention</span>' : '<span style="color:#70a060">all clear ✓</span>'}</span>`;
+      <span class="bc-sub">${recs.length} records · ${recent} this week · ${overdue > 0 ? '<span style="color:#ff8a8a">'+overdue+' need attention</span>' : '<span style="color:#1b5e20">all clear ✓</span>'}</span>`;
   } else if (mode === 'add') {
-    html += `<button class="bc-btn" style="border-color:rgba(120,140,80,0.25);color:#7a9060;" onclick="renderSectionList()">${meta ? meta.label : ''}</button>
+    html += `<button class="bc-btn" style="border-color:rgba(120,140,80,0.25);color:#333;" onclick="renderSectionList()">${meta ? meta.label : ''}</button>
       <span class="bc-sep">›</span>
-      <span style="font-size:11.5px;color:#8a9870;">${editingRecord ? 'Edit Record' : 'New Record'}</span>`;
+      <span style="font-size:11.5px;color:#333;">${editingRecord ? 'Edit Record' : 'New Record'}</span>`;
   } else if (mode === 'detail') {
-    html += `<button class="bc-btn" style="border-color:rgba(120,140,80,0.25);color:#7a9060;" onclick="renderSectionList()">${meta ? meta.label : ''}</button>
+    html += `<button class="bc-btn" style="border-color:rgba(120,140,80,0.25);color:#333;" onclick="renderSectionList()">${meta ? meta.label : ''}</button>
       <span class="bc-sep">›</span>
-      <span style="font-size:11.5px;color:#8a9870;">Details</span>`;
+      <span style="font-size:11.5px;color:#333;">Details</span>`;
   }
   bc.innerHTML = html;
 }
@@ -3168,7 +3168,7 @@ function tDrawPanel(ds){
         <div style="font-size:13px;color:${t.done?'#4a6040':'#c8d8a0'};text-decoration:${t.done?'line-through':''};line-height:1.4;">${escHtml(t.text)}</div>
         <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
           <span style="font-size:10px;color:${PC[t.priority]||'#7ec860'};background:${(PC[t.priority]||'#7ec860')}22;border:1px solid ${(PC[t.priority]||'#7ec860')}44;border-radius:10px;padding:1px 8px;">${t.priority}</span>
-          ${t.assignee?`<span style="font-size:10px;color:#7a8a6a;background:rgba(255,255,255,0.09);border-radius:10px;padding:1px 8px;">👤 ${escHtml(t.assignee)}</span>`:''}
+          ${t.assignee?`<span style="font-size:10px;color:#444;background:rgba(255,255,255,0.09);border-radius:10px;padding:1px 8px;">👤 ${escHtml(t.assignee)}</span>`:''}
         </div>
       </div>
       <button onclick="deleteTask('${ds}',${t.id});tPick('${ds}')" style="background:transparent;border:none;color:#aa2222;cursor:pointer;font-size:14px;padding:2px 5px;">✕</button>
@@ -3614,7 +3614,7 @@ function renderTasksList() {
                 <div style="font-size:13px;color:${t.done?'#4a6040':'#c8d8a0'};text-decoration:${t.done?'line-through':''};line-height:1.4;">${escHtml(t.text)}</div>
                 <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;align-items:center;">
                   <span style="font-size:10px;color:${PC[t.priority]||'#7ec860'};background:${(PC[t.priority]||'#7ec860')}22;border:1px solid ${(PC[t.priority]||'#7ec860')}44;border-radius:10px;padding:1px 8px;">${t.priority}</span>
-                  ${t.assignee?`<span style="font-size:10px;color:#7a8a6a;background:rgba(255,255,255,0.09);border-radius:10px;padding:1px 8px;">👤 ${escHtml(t.assignee)}</span>`:''}
+                  ${t.assignee?`<span style="font-size:10px;color:#444;background:rgba(255,255,255,0.09);border-radius:10px;padding:1px 8px;">👤 ${escHtml(t.assignee)}</span>`:''}
                   ${t.done&&t.completedBy?`<span style="font-size:10px;color:#2e7d32;background:rgba(126,200,96,0.08);border:1px solid rgba(126,200,96,0.25);border-radius:10px;padding:1px 8px;">✓ ${escHtml(t.completedBy)}</span>`:''}
                 </div>
               </div>
@@ -4252,7 +4252,7 @@ function printCoolerLog() {
       <div class="sl">Total Checks</div>
     </div>
     <div class="sum-box">
-      <div class="sv" style="color:#1a6b1a;">${normal}</div>
+      <div class="sv" style="color:#1b5e20;">${normal}</div>
       <div class="sl">✓ Normal</div>
     </div>
     <div class="sum-box">
