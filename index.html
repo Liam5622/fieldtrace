@@ -3492,10 +3492,16 @@ function renderTasksList() {
   const search = (document.getElementById('tl-search') && document.getElementById('tl-search').value.toLowerCase()) || '';
   const filter = (document.getElementById('tl-filter') && document.getElementById('tl-filter').value) || 'all';
 
-  // Gather only manual tasks (not auto-populated from spray/fert/reports)
+  // Gather ONLY manually entered tasks — exclude everything auto-populated
   const allTasks = [];
   Object.entries(db.tasks_data || {}).forEach(([ds, dayData]) => {
-    (dayData.tasks || []).filter(t => !t.autoAdded).forEach(t => {
+    (dayData.tasks || []).filter(t =>
+      !t.autoAdded &&
+      !t.sprayLogId &&
+      !t.fertAppId &&
+      !t.fertScheduleId &&
+      !t.dailyReportTask
+    ).forEach(t => {
       allTasks.push({ ...t, date: ds });
     });
   });
@@ -3611,7 +3617,7 @@ function renderTasksList() {
                   ${t.done&&t.completedBy?`<span style="font-size:10px;color:#7ec860;background:rgba(126,200,96,0.08);border:1px solid rgba(126,200,96,0.25);border-radius:10px;padding:1px 8px;">✓ ${escHtml(t.completedBy)}</span>`:''}
                 </div>
               </div>
-              <button onclick="deleteTask('${ds}',${t.id});renderTasksList()" style="background:transparent;border:none;color:#aa2222;cursor:pointer;font-size:14px;padding:2px 5px;flex-shrink:0;">✕</button>
+              <button class="tl-del-btn" data-ds="${ds}" data-tid="${t.id}" style="background:#ffeaea;border:1px solid #ffaaaa;border-radius:6px;color:#cc0000;cursor:pointer;font-size:12px;font-weight:700;padding:4px 10px;flex-shrink:0;">Delete</button>
             </div>`).join('')}
         </div>` : ''}
 
@@ -3658,6 +3664,17 @@ function renderTasksList() {
   });
 
   el.innerHTML = html;
+
+  // Wire delete buttons via event delegation
+  el.querySelectorAll('.tl-del-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var ds  = btn.getAttribute('data-ds');
+      var tid = parseInt(btn.getAttribute('data-tid'));
+      if (!ds || !tid) return;
+      deleteTask(ds, tid);
+      renderTasksList();
+    });
+  });
 }
 
 // Quick-add task form from Task List view
