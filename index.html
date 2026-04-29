@@ -2214,10 +2214,11 @@ function saveDhlRecord() {
     return el ? el.value : '';
   };
   const varieties = collectVarietyRows();
-  const totalLbs     = varieties.reduce((a,v) => a + v.lbs,   0);
-  const totalBoxes   = varieties.reduce((a,v) => a + v.boxes, 0);
-  const totalPickers = varieties.reduce((a,v) => a + v.pickers, 0);
-  const totalHours   = varieties.reduce((a,v) => a + (v.pickers * v.hoursEach), 0);
+  const totalLbs     = varieties.reduce((a,v) => a + (parseFloat(v.lbs)       || 0), 0);
+  const totalBoxes   = varieties.reduce((a,v) => a + (parseFloat(v.boxes20lb) || 0), 0);
+  const totalFlats   = varieties.reduce((a,v) => a + (parseFloat(v.flats)     || 0), 0);
+  const totalPickers = varieties.reduce((a,v) => a + (parseInt(v.pickers)     || 0), 0);
+  const totalHours   = varieties.reduce((a,v) => a + ((parseInt(v.pickers)||0) * (parseFloat(v.hoursEach)||0)), 0);
 
   // Collect weather fields
   const weather = {
@@ -2251,6 +2252,7 @@ function saveDhlRecord() {
     varieties,
     totalLbs:    totalLbs.toFixed(1),
     totalBoxes:  totalBoxes.toFixed(0),
+    totalFlats:  totalFlats.toFixed(0),
     totalPickers,
     totalHours:  totalHours.toFixed(1),
     weather,
@@ -2489,20 +2491,15 @@ function renderSectionList() {
     return ms && mf;
   }).sort((a,b) => (b.date || b.hireDate || b.weekOf || b.id || '').localeCompare(a.date || a.hireDate || a.weekOf || a.id || ''));
 
+  // ── Live aggregated views — dispatch BEFORE empty check ──────────────────
+  if (activeSection === 'hrv_summary')      { renderSeasonSummary();   return; }
+  if (activeSection === 'hrv_variety')      { renderVarietyTracker();  return; }
+  if (activeSection === 'harvest')          { renderGapHarvestSync();  return; }
+  if (activeSection === 'fert_app_history') { renderFertAppHistory();  return; }
+  if (activeSection === 'spray_app_history'){ renderSprayAppHistory(); return; }
+
   if (filtered.length === 0) {
     content.innerHTML = `<div class="empty-state"><div class="ei">📋</div><div class="et">No records found</div><div class="es">Click "+ Add Record" to get started</div></div>`;
-    return;
-  }
-
-  // ── Season Summary (live aggregated) ──
-  if (activeSection === 'hrv_summary') {
-    renderSeasonSummary();
-    return;
-  }
-
-  // ── Special list view for Variety Tracker (live aggregated) ──
-  if (activeSection === 'hrv_variety') {
-    renderVarietyTracker();
     return;
   }
 
