@@ -1683,8 +1683,9 @@ function buildSeasonSummary() {
   // Day-level data
   const dailyRows = sorted.map(r => ({
     date:       r.date,
-    lbs:        parseFloat(r.totalLbs)    || 0,
-    boxes:      parseFloat(r.totalBoxes)  || 0,
+    lbs:        parseFloat(r.totalLbs) || (r.varieties||[]).reduce((a,v)=>a+(parseFloat(v.lbs)||0),0) || 0,
+    boxes:      parseFloat(r.totalBoxes) || (r.varieties||[]).reduce((a,v)=>a+(parseFloat(v.boxes20lb||v.boxes||0)||0),0) || 0,
+    flats:      parseFloat(r.totalFlats) || (r.varieties||[]).reduce((a,v)=>a+(parseFloat(v.flats||0)||0),0) || 0,
     pickers:    parseInt(r.totalPickers)  || 0,
     hours:      parseFloat(r.totalHours)  || 0,
     crewNum:    r.crew ? (parseInt(r.crew.num) || 0) : 0,
@@ -1712,10 +1713,10 @@ function buildSeasonSummary() {
       const name = (v.variety || '').trim();
       if (!name) return;
       const key = name.toLowerCase();
-      if (!varMap[key]) varMap[key] = { name, lbs: 0, boxes: 0, days: 0 };
-      varMap[key].lbs   += parseFloat(v.lbs)   || 0;
-      varMap[key].boxes += parseFloat(v.boxes)  || 0;
-      varMap[key].days  += 1;
+      if (!varMap[key]) varMap[key] = { name, lbs: 0, boxes20lb: 0, flats: 0, days: 0 };
+      varMap[key].lbs      += parseFloat(v.lbs)                       || 0;
+      varMap[key].boxes20lb += parseFloat(v.boxes20lb || v.boxes || 0) || 0;
+      varMap[key].flats     += parseFloat(v.flats || 0)               || 0;
     });
   });
   const varieties = Object.values(varMap).sort((a,b) => b.lbs - a.lbs);
@@ -1756,7 +1757,8 @@ function renderSeasonSummary() {
     return `<tr>
       <td style="font-weight:600;color:#111;">${escHtml(v.name)}</td>
       <td class="r" style="font-weight:700;color:#7ec860;">${v.lbs.toFixed(1)}</td>
-      <td class="r">${v.boxes.toFixed(0)}</td>
+      <td class="r">${(v.boxes20lb||0).toFixed(0)}</td>
+      <td class="r">${(v.flats||0).toFixed(0)}</td>
       <td class="r">${v.days}</td>
       <td class="r">${avg}</td>
       <td><div class="ss-bar-wrap"><div class="ss-bar-bg"><div class="ss-bar-fill" style="width:${barW}%;background:${barColor};"></div></div><span class="ss-pct">${pct}%</span></div></td>
@@ -1822,7 +1824,7 @@ function renderSeasonSummary() {
       ${s.varieties.length === 0 ? '<p style="color:#444;font-size:13px;margin-bottom:20px;">No variety data found — fill in variety names in the Daily Harvest Log.</p>' : `
         <table class="ss-variety-table">
           <thead><tr>
-            <th>Variety</th><th class="r">Total Lbs</th><th class="r">Total Boxes</th>
+            <th>Variety</th><th class="r">Total Lbs</th><th class="r">20 lb Boxes</th><th class="r">Flats</th>
             <th class="r">Days Picked</th><th class="r">Avg Lbs/Day</th><th>% of Season</th>
           </tr></thead>
           <tbody>${varRows}</tbody>
@@ -1878,12 +1880,14 @@ function buildVarietyTotals() {
           name,
           totalLbs:   0,
           totalBoxes: 0,
+          totalFlats: 0,
           days:       [],
         };
       }
-      map[key].totalLbs   += parseFloat(v.lbs)   || 0;
-      map[key].totalBoxes += parseFloat(v.boxes)  || 0;
-      if (date) map[key].days.push({ date, lbs: parseFloat(v.lbs)||0, boxes: parseFloat(v.boxes)||0 });
+      map[key].totalLbs    += parseFloat(v.lbs)                       || 0;
+      map[key].totalBoxes  += parseFloat(v.boxes20lb || v.boxes || 0) || 0;
+      map[key].totalFlats  += parseFloat(v.flats  || 0)               || 0;
+      if (date) map[key].days.push({ date, lbs: parseFloat(v.lbs)||0, boxes: parseFloat(v.boxes20lb||v.boxes||0)||0, flats: parseFloat(v.flats||0)||0 });
     });
   });
 
