@@ -3982,7 +3982,7 @@ function renderWeeklySummary() {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
             <div style="font-size:12px;color:#4a148c;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;">📋 Weekly Summary — Top Items</div>
             <button id="ai-btn-${weekId}"
-              style="background:#7b1fa2;border:none;border-radius:6px;padding:6px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;">✨ AI Manager Summary</button>
+              style="background:#7b1fa2;border:none;border-radius:6px;padding:6px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;">📝 Generate Summary</button>
           </div>
           <ul style="margin:0;padding-left:20px;">
             ${bulletHtml}
@@ -4076,65 +4076,98 @@ function buildWeekBullets(w) {
   return bullets.slice(0, 10);
 }
 
-async function generateAiWeeklySummary(w, weekId) {
-  const btn = document.getElementById('ai-btn-' + weekId);
-  const box = document.getElementById('ai-summary-' + weekId);
+function generateAiWeeklySummary(w, weekId) {
+  var btn = document.getElementById('ai-btn-' + weekId);
+  var box = document.getElementById('ai-summary-' + weekId);
   if (!btn || !box) return;
 
   btn.textContent = '⏳ Generating…';
   btn.disabled = true;
-  box.innerHTML = '<div style="color:#333;font-size:12px;font-style:italic;">Generating managerial summary…</div>';
 
-  // Build the context from the week data
-  const lines = [];
-  lines.push('Week: ' + fmtDateShort(w.weekStart) + ' to ' + fmtDateShort(w.weekEnd));
-  lines.push('Total hours worked: ' + w.totalHours.toFixed(1));
-  lines.push('Max workers on any day: ' + w.totalWorkers);
-  lines.push('Days with reports: ' + w.daysReported);
-  lines.push('Tasks completed: ' + w.tasksDone + ' of ' + w.tasksTotal);
-  lines.push('');
-  lines.push('Daily completion reports:');
-  w.summaries.sort((a,b) => a.date.localeCompare(b.date)).forEach(day => {
-    lines.push('- ' + fmtDateShort(day.date) + ' (' + (day.workers||0) + ' workers, ' + (day.hours||0) + ' hrs): ' + day.text);
-  });
+  // ── Smart local summary — no API needed ──────────────────────────────────
+  var summary = buildLocalWeeklySummary(w);
 
-  // Completed task names
-  const doneTasks = [];
-  Object.values(w.days).forEach(day => {
-    (day.tasks||[]).filter(t=>t.done&&!t.autoAdded).forEach(t=>doneTasks.push(t.text));
-  });
-  if (doneTasks.length > 0) lines.push('Completed tasks: ' + doneTasks.join(', '));
+  box.innerHTML =
+    '<div style="background:#f8f5ff;border:2px solid #d1c4e9;border-radius:10px;padding:14px 18px;margin-top:8px;">'
+    + '<div style="font-size:10px;color:#4a148c;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">📝 Manager Summary</div>'
+    + '<div style="font-size:13.5px;color:#111;line-height:1.8;font-weight:500;">' + escHtml(summary) + '</div>'
+    + '</div>';
 
-  const nl = '\n';
-  const prompt = 'You are writing a professional weekly operations summary for a farm manager. Based on the following data from daily completion reports, write a concise managerial summary of 3-5 sentences covering: what the main work accomplished was, workforce and hours overview, and any notable items. Keep it professional and factual.' + nl + nl + lines.join(nl);
+  btn.textContent = '📝 Generate Summary';
+  btn.disabled = false;
+}
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 400,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content && data.content[0] && data.content[0].text;
-    if (text) {
-      box.innerHTML = `
-        <div style="background:rgba(192,120,224,0.08);border:1px solid rgba(192,120,224,0.2);border-radius:8px;padding:12px 14px;margin-top:4px;">
-          <div style="font-size:10px;color:#222;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">✨ AI Manager Summary</div>
-          <div style="font-size:13px;color:#111;line-height:1.7;">${escHtml(text)}</div>
-        </div>`;
-    } else {
-      box.innerHTML = '<div style="color:#e09040;font-size:12px;">Could not generate summary. Try again.</div>';
-    }
-  } catch(e) {
-    box.innerHTML = '<div style="color:#e09040;font-size:12px;">Error: ' + escHtml(e.message) + '</div>';
+function buildLocalWeeklySummary(w) {
+  var parts = [];
+  var dateRange = 'the week of ' + fmtDateShort(w.weekStart) + ' through ' + fmtDateShort(w.weekEnd);
+
+  // Opening — workforce & hours
+  if (w.totalHours > 0 && w.totalWorkers > 0) {
+    parts.push('During ' + dateRange + ', the team logged ' + w.totalHours.toFixed(1) + ' total hours of work with up to ' + w.totalWorkers + ' workers on site across ' + w.daysReported + ' reported day' + (w.daysReported !== 1 ? 's' : '') + '.');
+  } else if (w.daysReported > 0) {
+    parts.push('Operations were carried out during ' + dateRange + ' over ' + w.daysReported + ' reported day' + (w.daysReported !== 1 ? 's' : '') + '.');
+  } else {
+    parts.push('Activity was recorded during ' + dateRange + '.');
   }
 
-  btn.textContent = '✨ AI Manager Summary';
-  btn.disabled = false;
+  // Tasks
+  if (w.tasksTotal > 0) {
+    var pct = Math.round(w.tasksDone / w.tasksTotal * 100);
+    if (pct === 100) {
+      parts.push('All ' + w.tasksTotal + ' assigned task' + (w.tasksTotal !== 1 ? 's' : '') + ' were completed successfully.');
+    } else {
+      parts.push(w.tasksDone + ' of ' + w.tasksTotal + ' assigned task' + (w.tasksTotal !== 1 ? 's' : '') + ' were completed (' + pct + '% completion rate).');
+    }
+  }
+
+  // Spray applications this week
+  var sprayRecs = (db['spray_log'] || []).filter(function(r) {
+    return r.date && r.date >= w.weekStart && r.date <= w.weekEnd;
+  });
+  if (sprayRecs.length > 0) {
+    var sprayProducts = [...new Set(sprayRecs.map(function(r){ return r.product; }).filter(Boolean))];
+    var sprayFields   = [...new Set(sprayRecs.map(function(r){ return r.field; }).filter(Boolean))];
+    var sprayStr = sprayRecs.length + ' spray application' + (sprayRecs.length !== 1 ? 's were' : ' was') + ' completed';
+    if (sprayProducts.length) sprayStr += ' using ' + sprayProducts.join(' and ');
+    if (sprayFields.length)   sprayStr += ' on ' + sprayFields.join(', ');
+    parts.push(sprayStr + '.');
+  }
+
+  // Fertilizer applications this week
+  var fertRecs = (db['fert_application'] || []).filter(function(r) {
+    return r.date && r.date >= w.weekStart && r.date <= w.weekEnd;
+  });
+  if (fertRecs.length > 0) {
+    var fertProducts = [...new Set(fertRecs.map(function(r){ return r.product; }).filter(Boolean))];
+    var fertFields   = [...new Set(fertRecs.map(function(r){ return r.field; }).filter(Boolean))];
+    var fertStr = fertRecs.length + ' fertilizer application' + (fertRecs.length !== 1 ? 's were' : ' was') + ' recorded';
+    if (fertProducts.length) fertStr += ' with ' + fertProducts.join(' and ');
+    if (fertFields.length)   fertStr += ' applied to ' + fertFields.join(', ');
+    parts.push(fertStr + '.');
+  }
+
+  // Daily report highlights
+  var highlights = w.summaries
+    .filter(function(d){ return d.text && d.text.trim().length > 10; })
+    .sort(function(a,b){ return a.date.localeCompare(b.date); });
+  if (highlights.length > 0) {
+    var avgHrs = w.totalHours > 0 && w.daysReported > 0
+      ? ' averaging ' + (w.totalHours / w.daysReported).toFixed(1) + ' hours per day'
+      : '';
+    parts.push('Daily reports indicate' + avgHrs + ': ' + highlights.slice(0,2).map(function(d){
+      return fmtDateShort(d.date) + ' — ' + d.text.split('\n')[0].slice(0, 80) + (d.text.length > 80 ? '…' : '');
+    }).join('; ') + (highlights.length > 2 ? '; and ' + (highlights.length - 2) + ' additional days.' : '.'));
+  }
+
+  // Closing
+  var noReport = Object.keys(w.days).filter(function(ds){
+    var r = getDailyReport(ds); return !r.summary && !r.workers;
+  });
+  if (noReport.length > 0 && noReport.length <= 3) {
+    parts.push('Note: daily reports were not submitted for ' + noReport.map(fmtDateShort).join(', ') + '.');
+  }
+
+  return parts.join(' ');
 }
 
 
