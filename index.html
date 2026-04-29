@@ -2029,9 +2029,10 @@ function collectVarietyRows() {
     const v = {
       variety:   inputs[0] ? inputs[0].value.trim() : '',
       lbs:       inputs[1] ? (parseFloat(inputs[1].value) || 0) : 0,
-      boxes:     inputs[2] ? (parseFloat(inputs[2].value) || 0) : 0,
-      pickers:   inputs[3] ? (parseInt(inputs[3].value)   || 0) : 0,
-      hoursEach: inputs[4] ? (parseFloat(inputs[4].value) || 0) : 0,
+      boxes20lb: inputs[2] ? (parseFloat(inputs[2].value) || 0) : 0,
+      flats:     inputs[3] ? (parseFloat(inputs[3].value) || 0) : 0,
+      pickers:   inputs[4] ? (parseInt(inputs[4].value)   || 0) : 0,
+      hoursEach: inputs[5] ? (parseFloat(inputs[5].value) || 0) : 0,
     };
     if (v.variety || v.lbs || v.boxes) varieties.push(v);
   });
@@ -2040,24 +2041,26 @@ function collectVarietyRows() {
 
 // Update the totals row live as user types
 function updateDhlTotals() {
-  const varieties = collectVarietyRows();
-  const totalLbs   = varieties.reduce((a,v) => a + v.lbs, 0);
-  const totalBoxes = varieties.reduce((a,v) => a + v.boxes, 0);
+  const varieties    = collectVarietyRows();
+  const totalLbs     = varieties.reduce((a,v) => a + v.lbs, 0);
+  const totalBoxes   = varieties.reduce((a,v) => a + (v.boxes20lb || v.boxes || 0), 0);
+  const totalFlats   = varieties.reduce((a,v) => a + (v.flats || 0), 0);
   const totalPickers = Math.max(...varieties.map(v => v.pickers), 0);
-  const totalHours = varieties.reduce((a,v) => a + (v.pickers * v.hoursEach), 0);
+  const totalHours   = varieties.reduce((a,v) => a + (v.pickers * v.hoursEach), 0);
   const el = document.getElementById('dhl-totals-row');
   if (el) el.innerHTML = `
     <td style="color:#7ec860;font-weight:700;">TOTALS</td>
     <td></td>
-    <td style="text-align:right;color:#7ec860;">${totalLbs.toFixed(1)}</td>
-    <td style="text-align:right;color:#7ec860;">${totalBoxes.toFixed(0)}</td>
+    <td style="text-align:right;color:#7ec860;font-weight:700;">${totalLbs.toFixed(1)} lbs</td>
+    <td style="text-align:right;color:#7ec860;font-weight:700;">${totalBoxes.toFixed(0)}</td>
+    <td style="text-align:right;color:#7ec860;font-weight:700;">${totalFlats.toFixed(0)}</td>
     <td style="text-align:right;color:#7ec860;">${totalPickers}</td>
     <td style="text-align:right;color:#7ec860;">${totalHours.toFixed(1)}</td>
     <td></td>`;
 }
 
 // Add a blank variety row to the form table
-function addVarietyRow(variety='', lbs='', boxes='', pickers='', hoursEach='') {
+function addVarietyRow(variety='', lbs='', boxes20lb='', flats='', pickers='', hoursEach='') {
   const tbody = document.getElementById('variety-tbody');
   if (!tbody) return;
   const tr = document.createElement('tr');
@@ -2073,9 +2076,10 @@ function addVarietyRow(variety='', lbs='', boxes='', pickers='', hoursEach='') {
         <option value="Hall"       ${variety==='Hall'       ?'selected':''}>Hall</option>
       </select>
     </td>
-    <td><input class="var-input num" type="number" min="0" step="0.1" placeholder="0" value="${lbs}" oninput="updateDhlTotals()"></td>
-    <td><input class="var-input num" type="number" min="0" step="1"   placeholder="0" value="${boxes}" oninput="updateDhlTotals()"></td>
-    <td><input class="var-input num" type="number" min="0" step="1"   placeholder="0" value="${pickers}" oninput="updateDhlTotals()"></td>
+    <td><input class="var-input num" type="number" min="0" step="0.1" placeholder="0" value="${lbs}"      oninput="updateDhlTotals()"></td>
+    <td><input class="var-input num" type="number" min="0" step="1"   placeholder="0" value="${boxes20lb}" oninput="updateDhlTotals()"></td>
+    <td><input class="var-input num" type="number" min="0" step="1"   placeholder="0" value="${flats}"    oninput="updateDhlTotals()"></td>
+    <td><input class="var-input num" type="number" min="0" step="1"   placeholder="0" value="${pickers}"  oninput="updateDhlTotals()"></td>
     <td><input class="var-input num" type="number" min="0" step="0.5" placeholder="0" value="${hoursEach}" oninput="updateDhlTotals()"></td>
     <td><button class="btn-del-row" onclick="this.closest('tr').remove();updateDhlTotals()">✕</button></td>`;
   tbody.appendChild(tr);
@@ -2159,8 +2163,9 @@ function renderDhlForm(isEdit) {
             <tr>
               <th>Variety / Crop</th>
               <th style="text-align:right">Lbs Picked</th>
-              <th style="text-align:right">Boxes / Flats</th>
-              <th style="text-align:right">Pickers Used</th>
+              <th style="text-align:right">20 lb Boxes</th>
+              <th style="text-align:right">Flats</th>
+              <th style="text-align:right">Pickers</th>
               <th style="text-align:right">Hrs / Picker</th>
               <th></th>
             </tr>
@@ -2169,7 +2174,7 @@ function renderDhlForm(isEdit) {
           <tfoot>
             <tr class="totals-row" id="dhl-totals-row">
               <td style="color:#7ec860;font-weight:700;">TOTALS</td>
-              <td></td><td></td><td></td><td></td><td></td>
+              <td></td><td></td><td></td><td></td><td></td><td></td>
             </tr>
           </tfoot>
         </table>
@@ -2193,7 +2198,7 @@ function renderDhlForm(isEdit) {
 
   // Pre-populate variety rows
   if (varieties.length > 0) {
-    varieties.forEach(v => addVarietyRow(v.variety, v.lbs, v.boxes, v.pickers, v.hoursEach));
+    varieties.forEach(v => addVarietyRow(v.variety, v.lbs, v.boxes20lb||v.boxes||0, v.flats||0, v.pickers, v.hoursEach));
   } else {
     addVarietyRow(); // start with one blank row
   }
