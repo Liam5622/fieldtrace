@@ -1075,6 +1075,7 @@ const FIELDS = {
     {key:'labName',label:'Lab Name',type:'text'},
     {key:'status',label:'Status',type:'select',options:['Pass','Fail','Pending']},
     {key:'notes',label:'Notes',type:'textarea'},
+    {key:"doc_water_test", label:"Test Results / Lab Report (Upload)", type:"document"},
   ],
   equipment:[
     {key:'date',label:'Inspection Date',type:'date'},
@@ -3662,62 +3663,56 @@ function tShowAddTaskForm() {
   if (!el) return;
   const today = tToday();
   const formHtml = `
-    <div style="max-width:640px;background:#D4DCC4;border:1px solid #A8BC8C;border-radius:12px;padding:22px 24px;margin-bottom:20px;">
-      <div style="font-size:14px;font-weight:700;color:#6B7C5A;margin-bottom:16px;">+ New Task</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;">
+    <div style="max-width:600px;background:#fff;border:2px solid #A8BC8C;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(44,54,38,0.08);">
+      <div style="font-size:16px;font-weight:800;color:#2C3626;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #D4DCC4;">+ New Task</div>
 
-        <div style="grid-column:1/-1;">
-          <label style="font-size:10px;color:#3D5240;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;">Task Description</label>
-          <input id="tla-txt" type="text" placeholder="What needs to be done?"
-            style="width:100%;background:rgba(255,255,255,0.09);border:1px solid rgba(192,120,224,0.3);border-radius:6px;padding:8px 11px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;">
-        </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Task Description</label>
+        <input id="tla-txt" type="text" placeholder="What needs to be done?"
+          style="width:100%;background:#f5f5f0;border:1px solid #A8BC8C;border-radius:6px;padding:10px 12px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;box-sizing:border-box;">
+      </div>
 
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
         <div>
-          <label style="font-size:10px;color:#3D5240;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;">Due Date</label>
+          <label style="font-size:11px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Due Date</label>
           <input id="tla-date" type="date" value="${today}"
-            style="width:100%;background:#fff;border:1px solid #A8BC8C;border-radius:6px;padding:8px 11px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;">
+            style="width:100%;background:#f5f5f0;border:1px solid #A8BC8C;border-radius:6px;padding:10px 12px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;box-sizing:border-box;">
         </div>
-
         <div>
-          <label style="font-size:10px;color:#3D5240;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;">Priority</label>
-          <select id="tla-pri" style="width:100%;background:rgba(40,30,50,0.95);border:1px solid rgba(192,120,224,0.3);border-radius:6px;padding:8px 9px;color:#2C3626;font-size:12px;outline:none;font-family:Georgia,serif;">
+          <label style="font-size:11px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Priority</label>
+          <select id="tla-pri" style="width:100%;background:#f5f5f0;border:1px solid #A8BC8C;border-radius:6px;padding:10px 12px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;font-weight:600;box-sizing:border-box;">
             <option>Normal</option><option>High</option><option>Low</option>
           </select>
         </div>
-
-        <div>
-          <label style="font-size:10px;color:#3D5240;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;">Assign To</label>
-          <input id="tla-who" type="text" placeholder="Name (optional)"
-            style="width:100%;background:rgba(255,255,255,0.09);border:1px solid rgba(192,120,224,0.3);border-radius:6px;padding:8px 11px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;">
-        </div>
-
-        <!-- Divider -->
-        <div style="grid-column:1/-1;border-top:1px solid rgba(192,120,224,0.12);margin:4px 0;"></div>
-
-        <!-- Completed checkbox -->
-        <div style="grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <button id="tla-done-btn" onclick="tToggleCompleted()"
-              style="background:#D4DCC4;border:2px solid rgba(192,120,224,0.35);border-radius:50%;width:26px;height:26px;min-width:26px;cursor:pointer;color:#3D5240;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-family:Georgia,serif;"></button>
-            <label style="font-size:13px;color:#3D5240;cursor:pointer;user-select:none;" onclick="tToggleCompleted()">Mark as Completed</label>
-          </div>
-          <div id="tla-completedby-wrap" style="display:none;flex:1;min-width:200px;">
-            <input id="tla-completedby" type="text" placeholder="Completed by (name)…"
-              style="width:100%;background:rgba(126,200,96,0.06);border:1px solid #A8BC8C;border-radius:6px;padding:8px 11px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;">
-          </div>
-        </div>
-
       </div>
-      <div style="display:flex;gap:10px;margin-top:20px;">
-        <button onclick="tListAdd()" style="background:#3D5240;border:none;border-radius:6px;padding:10px 24px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:Georgia,serif;">Save Task</button>
-        <button onclick="renderTasksList()" style="background:transparent;border:1px solid #A8BC8C;border-radius:6px;padding:10px 18px;color:#3D5240;font-size:13px;cursor:pointer;font-family:Georgia,serif;">Cancel</button>
+
+      <div style="margin-bottom:18px;">
+        <label style="font-size:11px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px;">Assign To</label>
+        <input id="tla-who" type="text" placeholder="Name (optional)"
+          style="width:100%;background:#f5f5f0;border:1px solid #A8BC8C;border-radius:6px;padding:10px 12px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;box-sizing:border-box;">
+      </div>
+
+      <div style="border-top:1px solid #D4DCC4;padding-top:14px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button id="tla-done-btn" onclick="tToggleCompleted()"
+            style="background:#D4DCC4;border:2px solid #A8BC8C;border-radius:50%;width:28px;height:28px;min-width:28px;cursor:pointer;color:#3D5240;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-family:Georgia,serif;"></button>
+          <label style="font-size:13px;color:#3D5240;font-weight:600;cursor:pointer;user-select:none;" onclick="tToggleCompleted()">Mark as Completed</label>
+        </div>
+        <div id="tla-completedby-wrap" style="display:none;flex:1;min-width:200px;">
+          <input id="tla-completedby" type="text" placeholder="Completed by (name)…"
+            style="width:100%;background:#f5f5f0;border:1px solid #A8BC8C;border-radius:6px;padding:10px 12px;color:#2C3626;font-size:13px;outline:none;font-family:Georgia,serif;box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="tListAdd()" style="background:#3D5240;border:none;border-radius:6px;padding:11px 28px;color:#E8EAD8;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">Save Task</button>
+        <button onclick="renderTasksList()" style="background:transparent;border:1px solid #A8BC8C;border-radius:6px;padding:11px 18px;color:#3D5240;font-size:13px;font-weight:600;cursor:pointer;font-family:Georgia,serif;">Cancel</button>
       </div>
     </div>`;
 
   el.innerHTML = formHtml;
 }
 
-// Toggle the completed checkbox state in the add form
 function tToggleCompleted() {
   const btn  = document.getElementById('tla-done-btn');
   const wrap = document.getElementById('tla-completedby-wrap');
