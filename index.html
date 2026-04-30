@@ -1447,11 +1447,20 @@ function renderTasksFolderOverview() {
     + '<div style="padding:20px 16px;background:#D4DCC4;">'
     + '<div style="font-size:11px;color:#6B7C5A;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;">Select a section</div>'
     + '<div style="display:flex;flex-direction:column;gap:10px;">'
-    + makeMobileNavCard('📅', 'Work Calendar',          'Track tasks and daily operations',     "openSection('tasks_cal','tasks')",  '#3D5240')
+    + makeMobileNavCard('📅', 'Work Calendar',          'Track tasks and daily operations',     "openTasksCalSection()",  '#3D5240')
     + makeMobileNavCard('📝', 'Task List',              'View and manage all tasks with dates',  "openTasksListSection()",            '#3D5240')
     + makeMobileNavCard('📊', 'Weekly Summary',         'Auto-generated weekly report',          "openTasksWeeklySection()",          '#3D5240')
     + makeMobileNavCard('📋', 'Daily Completion Report','Fill in end-of-day manager report',     "openTasksReportSection()",          '#3D5240')
     + '</div></div>';
+}
+
+function openTasksCalSection() {
+  activeSection = 'tasks_cal';
+  activeFolder  = 'tasks';
+  folderOpen['tasks'] = true;
+  showView('section');
+  renderTasksCalendar();
+  updateSidebar();
 }
 
 function openTasksListSection() {
@@ -3051,15 +3060,15 @@ function renderTasksCalendar(){
 
   el.innerHTML=`
     <div style="padding-bottom:24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div style="background:#A8BC8C;border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
         <div style="display:flex;align-items:center;gap:6px;">
-          <button onclick="tBack()" style="background:#f0e8fa;border:2px solid #3D5240;border-radius:7px;color:#2C3626;cursor:pointer;padding:7px 18px;font-size:15px;font-weight:700;font-family:Georgia,serif;">◀</button>
-          <span style="font-size:20px;font-weight:900;color:#2C3626;min-width:230px;text-align:center;letter-spacing:-0.3px;">${nav}</span>
-          <button onclick="tFwd()"  style="background:#f0e8fa;border:2px solid #3D5240;border-radius:7px;color:#2C3626;cursor:pointer;padding:7px 18px;font-size:15px;font-weight:700;font-family:Georgia,serif;">▶</button>
+          <button onclick="tBack()" style="background:#3D5240;border:2px solid #2C3626;border-radius:7px;color:#E8EAD8;cursor:pointer;padding:7px 18px;font-size:15px;font-weight:700;font-family:Georgia,serif;">◀</button>
+          <span style="font-size:20px;font-weight:900;color:#2C3626;min-width:230px;text-align:center;letter-spacing:-0.3px;background:#E8EAD8;border-radius:8px;padding:6px 16px;">${nav}</span>
+          <button onclick="tFwd()"  style="background:#3D5240;border:2px solid #2C3626;border-radius:7px;color:#E8EAD8;cursor:pointer;padding:7px 18px;font-size:15px;font-weight:700;font-family:Georgia,serif;">▶</button>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          ${['year','month','week'].map(v=>`<button onclick="tSwitchView('${v}')" style="background:${tView===v?'#D4DCC4':'#D4DCC4'};border:2px solid ${tView===v?'#3D5240':'#A8BC8C'};border-radius:7px;color:${tView===v?'#2C3626':'#3D5240'};cursor:pointer;padding:7px 16px;font-size:13px;font-weight:${tView===v?'800':'600'};font-family:Georgia,serif;text-transform:capitalize;">${v}</button>`).join('')}
-          <button onclick="tNow()" style="background:#D4DCC4;border:2px solid #6B7C5A;border-radius:7px;color:#2C3626;cursor:pointer;padding:7px 14px;font-size:13px;font-family:Georgia,serif;font-weight:800;">Today</button>
+          ${['year','month','week'].map(v=>`<button onclick="tSwitchView('${v}')" style="background:${tView===v?'#2C3626':'#6B7C5A'};border:2px solid ${tView===v?'#2C3626':'#6B7C5A'};border-radius:7px;color:${tView===v?'#E8EAD8':'#E8EAD8'};cursor:pointer;padding:7px 16px;font-size:13px;font-weight:${tView===v?'800':'600'};font-family:Georgia,serif;text-transform:capitalize;">${v}</button>`).join('')}
+          <button onclick="tNow()" style="background:#2C3626;border:2px solid #2C3626;border-radius:7px;color:#E8EAD8;cursor:pointer;padding:7px 14px;font-size:13px;font-family:Georgia,serif;font-weight:800;">Today</button>
         </div>
       </div>
       <div id="t-grid"></div>
