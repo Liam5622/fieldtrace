@@ -3345,104 +3345,34 @@ function tDrawPanel(ds){
         return '<div style="background:#E8EAD8;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:20px;">'+summaryHtml+'</div>';
       })()}
 
-      <!-- Two-column layout: tasks left, daily report right -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-
-        <!-- LEFT: Task list + add task -->
-        <div>
-          <div style="font-size:10px;color:#3D5240;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:700;">Tasks</div>
-          <div style="margin-bottom:12px;">${rows}</div>
-          <!-- Add task row -->
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <input id="t-txt" type="text" placeholder="Add a task…" onkeydown="if(event.key==='Enter')tAdd('${ds}')"
-              style="flex:1;min-width:140px;background:rgba(255,255,255,0.09);border:1px solid rgba(192,120,224,0.3);border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
-            <select id="t-pri" style="width:90px;background:#fff;border:1px solid #A8BC8C;border-radius:6px;padding:7px 8px;color:#2C3626;font-size:12px;outline:none;font-family:Georgia,serif;">
-              <option>Normal</option><option>High</option><option>Low</option>
-            </select>
-            <input id="t-who" type="text" placeholder="Assign…"
-              style="width:100px;background:rgba(255,255,255,0.09);border:1px solid rgba(192,120,224,0.3);border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
-            <button onclick="tAdd('${ds}')"
-              style="background:#3D5240;border:none;border-radius:6px;padding:7px 14px;color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;">+ Add</button>
-          </div>
+      <!-- Tasks section (single column - report moved to its own tab) -->
+      <div>
+        <div style="font-size:10px;color:#3D5240;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:700;">Tasks</div>
+        <div style="margin-bottom:12px;">${rows}</div>
+        <!-- Add task row -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <input id="t-txt" type="text" placeholder="Add a task…" onkeydown="if(event.key==='Enter')tAdd('${ds}')"
+            style="flex:1;min-width:140px;background:#fff;border:1px solid #A8BC8C;border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
+          <select id="t-pri" style="width:90px;background:#fff;border:1px solid #A8BC8C;border-radius:6px;padding:7px 8px;color:#2C3626;font-size:12px;outline:none;font-family:Georgia,serif;">
+            <option>Normal</option><option>High</option><option>Low</option>
+          </select>
+          <input id="t-who" type="text" placeholder="Assign…"
+            style="width:100px;background:#fff;border:1px solid #A8BC8C;border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
+          <button onclick="tAdd('${ds}')"
+            style="background:#3D5240;border:none;border-radius:6px;padding:7px 14px;color:#E8EAD8;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;">+ Add</button>
         </div>
-
-        <!-- RIGHT: Daily Completion Report -->
-        <div style="background:${hasReport?'#E8EAD8':'#E8EAD8'};border:1px solid ${hasReport?'rgba(212,184,64,0.28)':'#E8EAD8'};border-radius:10px;padding:16px;">
-          <div style="font-size:10px;color:${hasReport?'#A0622A':'#5a4a6a'};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;font-weight:700;">📋 Daily Completion Report</div>
-
-          <div style="margin-bottom:10px;">
-            <label style="font-size:10px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">What Got Done Today</label>
-            <textarea id="cal-dr-summary" rows="3" placeholder="Describe what was accomplished…"
-              style="width:100%;background:#E8EAD8;border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;resize:vertical;">${escHtml(report.summary||'')}</textarea>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-            <div>
-              <label style="font-size:10px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Number of Workers</label>
-              <input id="cal-dr-workers" type="number" min="0" placeholder="0" value="${escHtml(report.workers||'')}"
-                style="width:100%;background:#E8EAD8;border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
-            </div>
-            <div>
-              <label style="font-size:10px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Hours Worked</label>
-              <input id="cal-dr-hours" type="number" min="0" step="0.5" placeholder="0" value="${escHtml(report.hoursWorked||'')}"
-                style="width:100%;background:#E8EAD8;border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
-            </div>
-          </div>
-
-          <div style="margin-bottom:12px;">
-            <label style="font-size:10px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Manager / Submitted By</label>
-            <input id="cal-dr-manager" type="text" placeholder="Manager name" value="${escHtml(report.manager||'')}"
-              style="width:100%;background:#E8EAD8;border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
-          </div>
-
-          <div style="margin-bottom:12px;">
-            <label style="font-size:10px;color:#3D5240;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Additional Notes</label>
-            <input id="cal-dr-notes" type="text" placeholder="Weather, issues, supplies…" value="${escHtml(report.notes||'')}"
-              style="width:100%;background:#E8EAD8;border:1px solid rgba(212,184,64,0.2);border-radius:6px;padding:7px 10px;color:#2C3626;font-size:12.5px;outline:none;font-family:Georgia,serif;">
-          </div>
-
-          <div style="display:flex;gap:8px;">
-            <button id="cal-dr-save-btn"
-              style="flex:1;background:#3D5240;border:none;border-radius:6px;padding:8px 14px;color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Georgia,serif;">Save Report</button>
-            <button id="cal-dr-clear-btn"
-              style="background:rgba(80,60,80,0.3);border:1px solid #A8BC8C;border-radius:6px;padding:8px 14px;color:#3D5240;font-size:12.5px;cursor:pointer;font-family:Georgia,serif;">Clear</button>
-          </div>
-          ${savedStamp}
+        <div style="margin-top:12px;padding:10px 14px;background:#D4DCC4;border-radius:8px;border:1px solid #A8BC8C;">
+          <span style="font-size:12px;color:#3D5240;font-weight:600;">📋 To fill in the Daily Completion Report, use the </span>
+          <button onclick="openTasksReportSection()" style="background:#3D5240;border:none;border-radius:5px;padding:4px 10px;color:#E8EAD8;font-size:12px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">Daily Completion Report</button>
+          <span style="font-size:12px;color:#3D5240;font-weight:600;"> tab.</span>
         </div>
-
       </div>
-    </div>`;
 
-  // Wire up Save and Clear buttons via addEventListener
-  const saveBtnEl  = document.getElementById('cal-dr-save-btn');
-  const clearBtnEl = document.getElementById('cal-dr-clear-btn');
-  if (saveBtnEl) {
-    saveBtnEl.addEventListener('click', function() { tSaveCalReport(ds); });
-  }
-  if (clearBtnEl) {
-    clearBtnEl.addEventListener('click', function() {
-      const s = document.getElementById('cal-dr-summary');
-      const w = document.getElementById('cal-dr-workers');
-      const h = document.getElementById('cal-dr-hours');
-      const m = document.getElementById('cal-dr-manager');
-      const n = document.getElementById('cal-dr-notes');
-      if (s) s.value = '';
-      if (w) w.value = '';
-      if (h) h.value = '';
-      if (m) m.value = '';
-      if (n) n.value = '';
-      // Also clear from db if saved
-      if (db.tasks_data && db.tasks_data[ds]) {
-        db.tasks_data[ds].report = {};
-        saveDB();
-        updateSidebar();
-        tDrawGrid();
-        tDrawPanel(ds);
-      }
-      showToast('Daily report cleared.');
-    });
-  }
+    </div>
+  </div>`;
+
 }
+
 
 function tSaveCalReport(ds) {
   const summary = document.getElementById('cal-dr-summary');
