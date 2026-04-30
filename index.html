@@ -2610,8 +2610,15 @@ function renderTools(mode, col) {
     }
     const records = getRecords(activeSection);
     const statuses = ['All', ...new Set(records.map(r=>r.status).filter(Boolean))];
-    const printBtn = activeSection === 'cooler'
-      ? `<button onclick="printCoolerLog()" style="background:rgba(46,107,138,0.8);border:none;border-radius:6px;padding:7px 15px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:Georgia,serif;">🖨️ Print Log</button>`
+    const printSections = {
+      cooler:    { fn:'printCoolerLog()',    label:'🖨️ Print Log' },
+      pest:      { fn:'printGapLog("pest")',      label:'🖨️ Print Log' },
+      cleaning:  { fn:'printGapLog("cleaning")',  label:'🖨️ Print Log' },
+      water:     { fn:'printGapLog("water")',     label:'🖨️ Print Log' },
+      equipment: { fn:'printGapLog("equipment")', label:'🖨️ Print Log' },
+    };
+    const printBtn = printSections[activeSection]
+      ? `<button onclick="${printSections[activeSection].fn}" style="background:#3D5240;border:none;border-radius:6px;padding:7px 15px;color:#E8EAD8;font-size:13px;font-weight:600;cursor:pointer;font-family:Georgia,serif;">${printSections[activeSection].label}</button>`
       : '';
     tools.innerHTML = `
       <input class="search-input" id="sec-search" placeholder="Search records…" oninput="renderSectionList()">
@@ -3492,7 +3499,7 @@ function renderTasksList() {
     <input id="tl-search" type="text" placeholder="Search tasks…" oninput="renderTasksList()"
       style="background:rgba(255,255,255,0.09);border:1px solid rgba(192,120,224,0.3);border-radius:6px;padding:6px 11px;color:#2C3626;font-size:12.5px;width:170px;outline:none;font-family:Georgia,serif;">
     <select id="tl-filter" onchange="renderTasksList()"
-      style="background:rgba(40,30,50,0.95);border:1px solid rgba(192,120,224,0.3);border-radius:6px;padding:6px 9px;color:#2C3626;font-size:12px;outline:none;font-family:Georgia,serif;">
+      style="background:#ffffff;border:1px solid #A8BC8C;border-radius:6px;padding:6px 9px;color:#2C3626;font-size:12px;outline:none;font-family:Georgia,serif;font-weight:600;">
       <option value="all">All Tasks</option>
       <option value="pending">Pending</option>
       <option value="done">Completed</option>
@@ -4321,6 +4328,128 @@ function printCoolerLog() {
   setTimeout(() => win.print(), 600);
 }
 
+
+// ── Generic GAP Section Print Log ────────────────────────────────────────────
+function printGapLog(section) {
+  const records = getRecords(section);
+  if (records.length === 0) {
+    alert('No records to print.');
+    return;
+  }
+
+  const titles = {
+    pest:      'Pest Control Log',
+    cleaning:  'Cleaning Schedule Log',
+    water:     'Water Testing Log',
+    equipment: 'Equipment Inspection Log',
+  };
+
+  const columns = {
+    pest: [
+      {key:'date',label:'Date'}, {key:'area',label:'Area Treated'},
+      {key:'pesticide',label:'Pesticide/Method'}, {key:'applicator',label:'Applicator'},
+      {key:'reentry',label:'Re-Entry'}, {key:'nextScheduled',label:'Next Scheduled'},
+      {key:'status',label:'Status'}, {key:'notes',label:'Notes'},
+    ],
+    cleaning: [
+      {key:'date',label:'Date'}, {key:'area',label:'Area Cleaned'},
+      {key:'method',label:'Method/Product'}, {key:'cleanedBy',label:'Cleaned By'},
+      {key:'verifiedBy',label:'Verified By'}, {key:'frequency',label:'Frequency'},
+      {key:'status',label:'Status'}, {key:'notes',label:'Notes'},
+    ],
+    water: [
+      {key:'date',label:'Date'}, {key:'source',label:'Water Source'},
+      {key:'testType',label:'Test Type'}, {key:'result',label:'Result'},
+      {key:'testedBy',label:'Tested By'}, {key:'labName',label:'Lab Name'},
+      {key:'status',label:'Status'}, {key:'notes',label:'Notes'},
+    ],
+    equipment: [
+      {key:'date',label:'Inspection Date'}, {key:'equipment',label:'Equipment'},
+      {key:'inspector',label:'Inspector'}, {key:'issuesFound',label:'Issues Found'},
+      {key:'actionTaken',label:'Action Taken'}, {key:'nextInspection',label:'Next Inspection'},
+      {key:'status',label:'Status'}, {key:'notes',label:'Notes'},
+    ],
+  };
+
+  const cols = columns[section] || [];
+  const title = titles[section] || 'GAP Log';
+  const sorted = [...records].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const today = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  const now   = new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+
+  const completed = sorted.filter(r=>r.status==='Completed'||r.status==='Pass').length;
+  const overdue   = sorted.filter(r=>r.status==='Overdue'||r.status==='Fail').length;
+
+  function statusColor(s) {
+    if (!s) return '#3D5240';
+    const sl = s.toLowerCase();
+    if (sl==='completed'||sl==='pass'||sl==='normal') return '#3D5240';
+    if (sl==='overdue'||sl==='fail'||sl==='critical'||sl==='out of service') return '#5C2108';
+    if (sl==='needs repair'||sl==='warning'||sl==='pending') return '#A0622A';
+    return '#3D5240';
+  }
+
+  const headerRow = '<tr>' + cols.map(c=>`<th>${c.label}</th>`).join('') + '</tr>';
+  const rows = sorted.map((r, i) => {
+    const cells = cols.map(c => {
+      const val = r[c.key] || '—';
+      if (c.key === 'status') return `<td style="color:${statusColor(val)};font-weight:700;">${val}</td>`;
+      if (c.key === 'notes') return `<td style="font-size:11px;color:#6B7C5A;">${val}</td>`;
+      return `<td>${val}</td>`;
+    }).join('');
+    return `<tr style="background:${i%2===0?'#f9f9f9':'#ffffff'};">${cells}</tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${title} — FieldTrace</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Georgia, serif; font-size: 12px; color: #2C3626; padding: 24px 32px; }
+    .header { border-bottom: 3px solid #2C3626; padding-bottom: 14px; margin-bottom: 18px; }
+    .header h1 { font-size: 22px; font-weight: 900; color: #2C3626; }
+    .header .sub { font-size: 12px; color: #6B7C5A; margin-top: 4px; }
+    .stats { display: flex; gap: 20px; margin-bottom: 18px; }
+    .stat-box { background: #E8EAD8; border: 1px solid #A8BC8C; border-radius: 6px; padding: 10px 18px; text-align: center; }
+    .stat-box .num { font-size: 22px; font-weight: 900; color: #2C3626; }
+    .stat-box .lbl { font-size: 10px; color: #6B7C5A; text-transform: uppercase; letter-spacing: 1px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th { background: #2C3626; color: #E8EAD8; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 7px 10px; border-bottom: 1px solid #D4DCC4; vertical-align: top; }
+    .sig-line { display: flex; gap: 20px; margin-top: 30px; }
+    .sig-box { flex: 1; border-top: 2px solid #2C3626; padding-top: 6px; font-size: 11px; color: #6B7C5A; }
+    .footer { margin-top: 20px; font-size: 10px; color: #A8BC8C; display: flex; justify-content: space-between; border-top: 1px solid #D4DCC4; padding-top: 8px; }
+    button { display: none; }
+    @media print { button { display: none !important; } }
+  </style></head><body>
+  <div class="header">
+    <h1>🌿 FieldTrace — ${title}</h1>
+    <div class="sub">Printed: ${today} at ${now} &nbsp;·&nbsp; ${sorted.length} total records</div>
+  </div>
+  <div class="stats">
+    <div class="stat-box"><div class="num">${sorted.length}</div><div class="lbl">Total Records</div></div>
+    <div class="stat-box"><div class="num" style="color:#3D5240;">${completed}</div><div class="lbl">Completed / Pass</div></div>
+    <div class="stat-box"><div class="num" style="color:#5C2108;">${overdue}</div><div class="lbl">Overdue / Fail</div></div>
+    <div class="stat-box"><div class="num" style="color:#A0622A;">${sorted.length - completed - overdue}</div><div class="lbl">Pending / Scheduled</div></div>
+  </div>
+  <button onclick="window.print()" style="display:block;background:#3D5240;color:#E8EAD8;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-size:13px;margin-bottom:14px;">🖨️ Print / Save as PDF</button>
+  <table><thead>${headerRow}</thead><tbody>${rows}</tbody></table>
+  <div class="sig-line">
+    <div class="sig-box">Manager / Inspector Signature</div>
+    <div class="sig-box">Date of Review</div>
+    <div class="sig-box">Title / Position</div>
+  </div>
+  <div class="footer">
+    <span>FieldTrace — ${title}</span>
+    <span>${sorted.length} records · Printed ${today}</span>
+  </div>
+  </body></html>`;
+
+  const win = window.open('', '_blank', 'width=1000,height=750');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
 
 // ── Global remove function callable from any onclick ─────────────────────────
 function removeRecord(rid) {
