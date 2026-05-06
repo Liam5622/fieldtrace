@@ -631,31 +631,20 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
-    var firebaseConfig = {
-      apiKey: "AIzaSyDYvT6xVPa77BmaX-LW0fMWUs9_N24jmMc",
-      authDomain: "field-trace-4b37e.firebaseapp.com",
-      projectId: "field-trace-4b37e",
-      storageBucket: "field-trace-4b37e.firebasestorage.app",
-      messagingSenderId: "802677386548",
-      appId: "1:802677386548:web:2bb5172b736609542d4961"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    var _db = firebase.firestore();
     window._fbReady   = false;
     window._fbSyncing = false;
 
     function saveToFirestore(dbObj) {
-      return _db.collection('fieldtrace').doc('main').set({
+      if (!window._db) return Promise.resolve();
+      return window._db.collection('fieldtrace').doc('main').set({
         data: JSON.stringify(dbObj),
         updatedAt: new Date().toISOString()
       });
     }
 
     function loadFromFirestore() {
-      return _db.collection('fieldtrace').doc('main').get().then(function(doc) {
+      if (!window._db) return Promise.resolve(null);
+      return window._db.collection('fieldtrace').doc('main').get().then(function(doc) {
         if (doc.exists && doc.data().data) {
           return JSON.parse(doc.data().data);
         }
@@ -664,12 +653,33 @@
     }
 
     function listenFirestore(onUpdate) {
-      return _db.collection('fieldtrace').doc('main').onSnapshot(function(snap) {
+      if (!window._db) return;
+      return window._db.collection('fieldtrace').doc('main').onSnapshot(function(snap) {
         if (snap.exists && snap.data().data && !window._fbSyncing) {
           try { onUpdate(JSON.parse(snap.data().data)); } catch(e) {}
         }
       });
     }
+
+    // Init Firebase after page loads to ensure SDK is ready
+    window.addEventListener('load', function() {
+      try {
+        var cfg = {
+          apiKey: "AIzaSyDYvT6xVPa77BmaX-LW0fMWUs9_N24jmMc",
+          authDomain: "field-trace-4b37e.firebaseapp.com",
+          projectId: "field-trace-4b37e",
+          storageBucket: "field-trace-4b37e.firebasestorage.app",
+          messagingSenderId: "802677386548",
+          appId: "1:802677386548:web:2bb5172b736609542d4961"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(cfg); }
+        window._db = firebase.firestore();
+        window._fbReady = true;
+        console.log('Firebase connected successfully');
+      } catch(e) {
+        console.warn('Firebase init failed:', e.message);
+      }
+    });
   </script>
 </head>
 <body>
