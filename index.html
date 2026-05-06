@@ -626,6 +626,51 @@
     border-radius: 4px; padding: 3px 10px; font-size: 11.5px; color: #3D5240;
   }
 </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyDYvT6xVPa77BmaX-LW0fMWUs9_N24jmMc",
+      authDomain: "field-trace-4b37e.firebaseapp.com",
+      projectId: "field-trace-4b37e",
+      storageBucket: "field-trace-4b37e.firebasestorage.app",
+      messagingSenderId: "802677386548",
+      appId: "1:802677386548:web:2bb5172b736609542d4961"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    var _db = firebase.firestore();
+    window._fbReady   = false;
+    window._fbSyncing = false;
+
+    function saveToFirestore(dbObj) {
+      return _db.collection('fieldtrace').doc('main').set({
+        data: JSON.stringify(dbObj),
+        updatedAt: new Date().toISOString()
+      });
+    }
+
+    function loadFromFirestore() {
+      return _db.collection('fieldtrace').doc('main').get().then(function(doc) {
+        if (doc.exists && doc.data().data) {
+          return JSON.parse(doc.data().data);
+        }
+        return null;
+      });
+    }
+
+    function listenFirestore(onUpdate) {
+      return _db.collection('fieldtrace').doc('main').onSnapshot(function(snap) {
+        if (snap.exists && snap.data().data && !window._fbSyncing) {
+          try { onUpdate(JSON.parse(snap.data().data)); } catch(e) {}
+        }
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -1380,11 +1425,18 @@ let folderOpen    = {gap:false, emp:false, harv:false, tasks:false, fert:false, 
 
 // ══ PERSISTENCE ══════════════════════════════════════════════════════════════
 function loadDB() {
-  try { const r = localStorage.getItem(STORAGE_KEY); db = r ? JSON.parse(r) : {}; }
-  catch { db = {}; }
+  try { const r = localStorage.getItem(STORAGE_KEY); db = r ? JSON.parse(r) : {}; } catch(e) { db = {}; }
+  if (typeof loadFromFirestore === "function") {
+    loadFromFirestore().then(function(remoteDb) {
+      if (remoteDb) { db = remoteDb; try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {} updateSidebar(); }
+      window._fbReady = true;
+      listenFirestore(function(remote) { db = remote; try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {} updateSidebar(); });
+    }).catch(function() { window._fbReady = true; });
+  }
 }
 function saveDB() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {}
+  if (typeof saveToFirestore === "function") { window._fbSyncing = true; saveToFirestore(db).then(function(){ setTimeout(function(){ window._fbSyncing = false; },2000); }).catch(function(){ window._fbSyncing = false; }); }
 }
 function getRecords(secId) { return db[secId] || []; }
 
@@ -2234,7 +2286,8 @@ function printSeasonSummary() {
     '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">',
     '<title>Season Harvest Summary — FieldTrace</title>',
     '<style>'+css+'</style>',
-    '</head><body>',
+    '
+</head><body>',
     body,
     '</body></html>'
   ].join('');
@@ -4745,7 +4798,8 @@ function printGapLog(section) {
     .footer { margin-top: 20px; font-size: 10px; color: #A8BC8C; display: flex; justify-content: space-between; border-top: 1px solid #D4DCC4; padding-top: 8px; }
     button { display: none; }
     @media print { button { display: none !important; } }
-  </style></head><body>
+  </style>
+</head><body>
   <div class="header">
     <h1>🌿 FieldTrace — ${title}</h1>
     <div class="sub">Printed: ${today} at ${now} &nbsp;·&nbsp; ${sorted.length} total records</div>
