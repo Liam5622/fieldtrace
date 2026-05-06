@@ -3198,21 +3198,6 @@ function renderTools(mode, col) {
     }
     const records = getRecords(activeSection);
     const statuses = ['All', ...new Set(records.map(r=>r.status).filter(Boolean))];
-    // Voice dictation button for spray log
-    if (activeSection === 'spray_log' && document.getElementById('view-section').classList.contains('active')) {
-      const formArea = document.getElementById('sec-content');
-      const micBtn = document.getElementById('spray-voice-btn');
-      if (!micBtn && formArea) {
-        const btn = document.createElement('button');
-        btn.id = 'spray-voice-btn';
-        btn.innerHTML = '🎤 Voice Fill';
-        btn.style.cssText = 'background:#3D5240;border:none;border-radius:6px;padding:7px 14px;color:#D4DCC4;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;';
-        btn.onclick = startSprayVoice;
-        const tools = document.getElementById('sec-tools');
-        if (tools) tools.appendChild(btn);
-      }
-    }
-
     const printSections = {
       cooler:    { fn:'printCoolerLog()',    label:'🖨️ Print Log' },
       pest:      { fn:'printGapLog("pest")',      label:'🖨️ Print Log' },
@@ -3291,6 +3276,9 @@ function renderAddForm(isEdit) {
   var formActions = '<div class="form-actions">';
   formActions += '<button class="btn-save" style="background:' + col + '" onclick="saveRecord()">Save Record</button>';
   formActions += '<button class="btn-cancel" onclick="formCancelBtn()">Cancel</button>';
+  if (activeSection === 'spray_log') {
+    formActions += '<button onclick="startSprayVoice()" style="background:#6B7C5A;border:none;border-radius:6px;padding:10px 18px;color:#ffffff;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;margin-left:8px;">🎤 Voice Fill</button>';
+  }
   if (isEdit && cancelId) {
     formActions += '<button onclick="formDeleteRecord()" style="margin-left:auto;background:#5C2108;border:none;border-radius:6px;padding:10px 22px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">🗑 Delete</button>';
   }
