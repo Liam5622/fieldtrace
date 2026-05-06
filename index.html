@@ -2306,6 +2306,159 @@ function printSeasonSummary() {
   if (win) win.onload = function(){ setTimeout(function(){ win.print(); }, 400); };
 }
 
+// ══ VOICE DICTATION — SPRAY LOG ═══════════════════════════════════════════════
+function startSprayVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice dictation is not supported on this browser. Please use Chrome or Safari.');
+    return;
+  }
+
+  const btn = document.getElementById('spray-voice-btn');
+  if (btn) { btn.innerHTML = '🔴 Listening…'; btn.style.background = '#8B3A10'; }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.lang = 'en-US';
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+
+  rec.onresult = function(e) {
+    const transcript = e.results[0][0].transcript;
+    if (btn) { btn.innerHTML = '⏳ Filling form…'; }
+    showToast('Heard: "' + transcript + '"');
+    parseSprayVoice(transcript);
+    setTimeout(function(){
+      if (btn) { btn.innerHTML = '🎤 Voice Fill'; btn.style.background = '#3D5240'; }
+    }, 2000);
+  };
+
+  rec.onerror = function(e) {
+    if (btn) { btn.innerHTML = '🎤 Voice Fill'; btn.style.background = '#3D5240'; }
+    showToast('Voice error: ' + e.error, 'danger');
+  };
+
+  rec.onend = function() {
+    if (btn && btn.innerHTML === '🔴 Listening…') {
+      btn.innerHTML = '🎤 Voice Fill';
+      btn.style.background = '#3D5240';
+    }
+  };
+
+  rec.start();
+}
+
+function parseSprayVoice(text) {
+  var t = text.toLowerCase();
+  var data = {};
+  var today = new Date().toISOString().split('T')[0];
+
+  // ── Date ─────────────────────────────────────────────────────────────────
+  if (/today/.test(t)) {
+    data.date = today;
+  } else {
+    var months = {january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+    var mMatch = t.match(/(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})/);
+    if (mMatch) {
+      var yr = new Date().getFullYear();
+      var mo = months[mMatch[1]];
+      var dy = parseInt(mMatch[2]);
+      data.date = yr + '-' + String(mo).padStart(2,'0') + '-' + String(dy).padStart(2,'0');
+    }
+  }
+
+  // ── Field / Block ─────────────────────────────────────────────────────────
+  var blockMatch = t.match(/block\s*(\d+|one|two|three)/i);
+  if (blockMatch) {
+    var bNum = blockMatch[1].replace('one','1').replace('two','2').replace('three','3');
+    data.field = 'Block ' + bNum;
+  }
+
+  // ── Product ───────────────────────────────────────────────────────────────
+  var products = ['roundup','round up','glyphosate','captan','mancozeb','copper','sulfur','malathion','bifenazate','spirotetramat','imidacloprid','azoxystrobin'];
+  for (var i=0; i<products.length; i++) {
+    if (t.indexOf(products[i]) !== -1) {
+      data.product = products[i].replace(/\w/g, function(c){ return c.toUpperCase(); });
+      break;
+    }
+  }
+  // Generic: "sprayed [product name]" or "applied [product]"
+  if (!data.product) {
+    var prodMatch = t.match(/(?:sprayed|applied|using|used)\s+([a-z\-\s]+?)(?:\s+on|\s+to|\s+at|\s+in|\s+\d|$)/i);
+    if (prodMatch) data.product = prodMatch[1].trim().replace(/\w/g, function(c){ return c.toUpperCase(); });
+  }
+
+  // ── Acres ─────────────────────────────────────────────────────────────────
+  var acresMatch = t.match(/(\d+(?:\.\d+)?)\s*acres?/);
+  if (acresMatch) data.totalAcres = acresMatch[1];
+
+  // ── Rate ──────────────────────────────────────────────────────────────────
+  var rateMatch = t.match(/(\d+(?:\.\d+)?)\s*(?:oz|ounces?|pint|quart|gallon|ml|fluid)(?:\s*per\s*acre)?/i);
+  if (rateMatch) data.appRate = rateMatch[0];
+
+  // ── Operator ──────────────────────────────────────────────────────────────
+  var byMatch = t.match(/(?:by|operator|applied by|sprayed by)\s+([a-z]+(?:\s+[a-z]+)?)/i);
+  if (byMatch) data.operator = byMatch[1].trim().replace(/\w/g, function(c){ return c.toUpperCase(); });
+
+  // ── Temperature ───────────────────────────────────────────────────────────
+  var tempMatch = t.match(/(\d{2,3})\s*degrees?(?:\s*f(?:ahrenheit)?)?/i);
+  if (tempMatch) data.tempF = tempMatch[1];
+
+  // ── Wind speed ────────────────────────────────────────────────────────────
+  var windMatch = t.match(/(\d+(?:\.\d+)?)\s*(?:mph|miles?\s*per\s*hour)/i);
+  if (windMatch) data.windSpeed = windMatch[1];
+
+  // ── Wind direction ────────────────────────────────────────────────────────
+  var windDirs = ['north','south','east','west','northeast','northwest','southeast','southwest','NE','NW','SE','SW','N','S','E','W'];
+  for (var d=0; d<windDirs.length; d++) {
+    if (t.indexOf(windDirs[d].toLowerCase()) !== -1) {
+      data.windDir = windDirs[d];
+      break;
+    }
+  }
+
+  // ── REI ───────────────────────────────────────────────────────────────────
+  var reiMatch = t.match(/re[\s-]?entry\s+(?:of\s+)?(\d+)\s*hours?/i);
+  if (reiMatch) data.rei = reiMatch[1] + ' hours';
+
+  // ── Status ────────────────────────────────────────────────────────────────
+  if (/complet/.test(t)) data.status = 'Completed';
+  else if (/schedul/.test(t)) data.status = 'Scheduled';
+  else if (/progress|partial/.test(t)) data.status = 'In Progress';
+  else data.status = 'Completed';
+
+  // ── Crop ─────────────────────────────────────────────────────────────────
+  var crops = ['blueberry','blueberries','muscadine','grape','strawberry','peach','apple','corn','soybean'];
+  for (var c=0; c<crops.length; c++) {
+    if (t.indexOf(crops[c]) !== -1) {
+      data.crop = crops[c].replace(/\w/g, function(ch){ return ch.toUpperCase(); });
+      break;
+    }
+  }
+
+  // ── Fill form fields ──────────────────────────────────────────────────────
+  var filled = 0;
+  var fields = document.querySelectorAll('[data-key]');
+  fields.forEach(function(field) {
+    var key = field.getAttribute('data-key');
+    var val = data[key];
+    if (!val) return;
+    var input = field.querySelector('input, select, textarea');
+    if (input) {
+      input.value = val;
+      input.dispatchEvent(new Event('input'));
+      input.dispatchEvent(new Event('change'));
+      filled++;
+    }
+  });
+
+  if (filled > 0) {
+    showToast('✓ Voice filled ' + filled + ' fields!', 'success');
+  } else {
+    showToast('Could not parse any fields. Try: "Sprayed Roundup on Block 1, 10 acres, by Liam, today"', 'danger');
+  }
+}
+
 // ══ VARIETY TRACKER — LIVE AGGREGATION FROM DAILY LOG ════════════════════════
 
 // Aggregate all variety data from every daily harvest record
@@ -3045,6 +3198,21 @@ function renderTools(mode, col) {
     }
     const records = getRecords(activeSection);
     const statuses = ['All', ...new Set(records.map(r=>r.status).filter(Boolean))];
+    // Voice dictation button for spray log
+    if (activeSection === 'spray_log' && document.getElementById('view-section').classList.contains('active')) {
+      const formArea = document.getElementById('sec-content');
+      const micBtn = document.getElementById('spray-voice-btn');
+      if (!micBtn && formArea) {
+        const btn = document.createElement('button');
+        btn.id = 'spray-voice-btn';
+        btn.innerHTML = '🎤 Voice Fill';
+        btn.style.cssText = 'background:#3D5240;border:none;border-radius:6px;padding:7px 14px;color:#D4DCC4;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;';
+        btn.onclick = startSprayVoice;
+        const tools = document.getElementById('sec-tools');
+        if (tools) tools.appendChild(btn);
+      }
+    }
+
     const printSections = {
       cooler:    { fn:'printCoolerLog()',    label:'🖨️ Print Log' },
       pest:      { fn:'printGapLog("pest")',      label:'🖨️ Print Log' },
