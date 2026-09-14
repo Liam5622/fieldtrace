@@ -713,6 +713,33 @@
       } catch(e) { console.warn('Firebase init failed:', e.message); }
     });
   </script>
+
+  <script>
+    function checkPassword() {
+      var val = document.getElementById('pw-input') ? document.getElementById('pw-input').value : '';
+      if (val === 'Muscadine983') {
+        document.getElementById('password-screen').style.display = 'none';
+        sessionStorage.setItem('ft_auth', '1');
+        if (typeof loadDB === 'function') { loadDB(); updateSidebar(); }
+      } else {
+        var err = document.getElementById('pw-error');
+        if (err) { err.style.display = 'block'; }
+        var inp = document.getElementById('pw-input');
+        if (inp) { inp.value = ''; inp.focus(); }
+      }
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      if (sessionStorage.getItem('ft_auth') === '1') {
+        var ps = document.getElementById('password-screen');
+        if (ps) ps.style.display = 'none';
+      } else {
+        setTimeout(function() {
+          var inp = document.getElementById('pw-input');
+          if (inp) inp.focus();
+        }, 100);
+      }
+    });
+  </script>
 </head>
 <body>
 
