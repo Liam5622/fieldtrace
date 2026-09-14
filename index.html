@@ -628,12 +628,77 @@
 </style>
 
   <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    window._fbReady   = false;
+    window._fbSyncing = false;
 
-  <!-- Firebase SDK -->
+    function mergeDB(local, remote) {
+      if (!remote) return local;
+      if (!local)  return remote;
+      var merged = JSON.parse(JSON.stringify(remote));
+      Object.keys(local).forEach(function(key) {
+        if (!merged[key]) {
+          merged[key] = local[key];
+        } else if (Array.isArray(local[key]) && Array.isArray(merged[key])) {
+          var ids = new Set(merged[key].map(function(r){ return r.id; }));
+          var extra = local[key].filter(function(r){ return r.id && !ids.has(r.id); });
+          if (extra.length) merged[key] = merged[key].concat(extra);
+        } else if (typeof local[key]==='object' && local[key] && typeof merged[key]==='object' && merged[key]) {
+          Object.keys(local[key]).forEach(function(k){ if(!merged[key][k]) merged[key][k]=local[key][k]; });
+        }
+      });
+      return merged;
+    }
 
+    function saveToFirestore(dbObj) {
+      if (!window._db) return Promise.resolve();
+      return window._db.collection('fieldtrace').doc('main').set({
+        data: JSON.stringify(dbObj),
+        updatedAt: new Date().toISOString()
+      });
+    }
 
+    function loadFromFirestore() {
+      if (!window._db) return Promise.resolve(null);
+      return window._db.collection('fieldtrace').doc('main').get().then(function(doc) {
+        if (doc.exists && doc.data().data) {
+          return JSON.parse(doc.data().data);
+        }
+        return null;
+      });
+    }
 
-  <!-- Firebase SDK -->
+    function listenFirestore(onUpdate) {
+      if (!window._db) return;
+      return window._db.collection('fieldtrace').doc('main').onSnapshot(function(snap) {
+        if (snap.exists && snap.data().data && !window._fbSyncing) {
+          try { onUpdate(JSON.parse(snap.data().data)); } catch(e) {}
+        }
+      });
+    }
+
+    // Init Firebase after page loads to ensure SDK is ready
+    window.addEventListener('load', function() {
+      try {
+        var cfg = {
+          apiKey: "AIzaSyDYvT6xVPa77BmaX-LW0fMWUs9_N24jmMc",
+          authDomain: "field-trace-4b37e.firebaseapp.com",
+          projectId: "field-trace-4b37e",
+          storageBucket: "field-trace-4b37e.firebasestorage.app",
+          messagingSenderId: "802677386548",
+          appId: "1:802677386548:web:2bb5172b736609542d4961"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(cfg); }
+        window._db = firebase.firestore();
+        window._fbReady = true;
+        console.log('Firebase connected successfully');
+      } catch(e) {
+        console.warn('Firebase init failed:', e.message);
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -1391,19 +1456,17 @@ function loadDB() {
   try { const r = localStorage.getItem(STORAGE_KEY); db = r ? JSON.parse(r) : {}; } catch(e) { db = {}; }
   if (typeof loadFromFirestore === "function") {
     loadFromFirestore().then(function(remoteDb) {
-      if (remoteDb) { db = remoteDb; try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {} updateSidebar(); }
+      if (remoteDb) { db = mergeDB(db, remoteDb); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {} saveToFirestore(db); updateSidebar(); }
       window._fbReady = true;
-      listenFirestore(function(remote) { db = remote; try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {} updateSidebar(); });
+      listenFirestore(function(remote) { if(!window._fbSyncing){ db = mergeDB(db, remote); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {} updateSidebar(); } });
     }).catch(function() { window._fbReady = true; });
   }
 }
 function saveDB() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {}
-  if (typeof saveToFirestore === "function" && window._fbReady) {
-    window._fbSyncing = true;
-    saveToFirestore(db).then(function(){ setTimeout(function(){ window._fbSyncing=false; },2000); }).catch(function(){ window._fbSyncing=false; });
-  }
+  if (typeof saveToFirestore === "function") { window._fbSyncing = true; saveToFirestore(db).then(function(){ setTimeout(function(){ window._fbSyncing = false; },2000); }).catch(function(){ window._fbSyncing = false; }); }
 }
+function getRecords(secId) { return db[secId] || []; }
 
 // ══ COUNTS ═══════════════════════════════════════════════════════════════════
 function countRec(ids)    { return ids.reduce((a,id) => a + getRecords(id).length, 0); }
@@ -5601,8 +5664,8 @@ function makeMobileNavCard(icon, title, desc, onclick, color) {
 }
 
 // ══ INIT ══════════════════════════════════════════════════════════════════════
-// ══ INIT ══════════════════════════════════════════════════════════════════════
-// DB loaded at bottom after password check
+loadDB();
+
 // ── One-time cleanup: remove stale spray entries from tasks and reports ───────
 (function() {
   var changed = false;
@@ -5644,113 +5707,6 @@ function makeMobileNavCard(icon, title, desc, onclick, color) {
   });
 
   if (changed) { try { localStorage.setItem('farmCertDB_v3', JSON.stringify(db)); } catch(e) {} }
-})();
-
-// ══ FIREBASE ═════════════════════════════════════════════════════════════════
-(function() {
-  var FB_CFG = {
-    apiKey:"AIzaSyDYvT6xVPa77BmaX-LW0fMWUs9_N24jmMc",
-    authDomain:"field-trace-4b37e.firebaseapp.com",
-    projectId:"field-trace-4b37e",
-    storageBucket:"field-trace-4b37e.firebasestorage.app",
-    messagingSenderId:"802677386548",
-    appId:"1:802677386548:web:2bb5172b736609542d4961"
-  };
-
-  function loadFirebase(cb) {
-    // Load firebase-app.js then firebase-firestore.js then call cb
-    var s1 = document.createElement('script');
-    s1.src = 'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js';
-    s1.onload = function() {
-      var s2 = document.createElement('script');
-      s2.src = 'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js';
-      s2.onload = function() { cb(); };
-      s2.onerror = function() { console.warn('Firestore script failed to load'); };
-      document.head.appendChild(s2);
-    };
-    s1.onerror = function() { console.warn('Firebase app script failed to load'); };
-    document.head.appendChild(s1);
-  }
-
-  function mergeDB(local, remote) {
-    if (!remote) return local;
-    if (!local)  return remote;
-    var merged = JSON.parse(JSON.stringify(remote));
-    Object.keys(local).forEach(function(key) {
-      if (!merged[key]) {
-        merged[key] = local[key];
-      } else if (Array.isArray(local[key]) && Array.isArray(merged[key])) {
-        var ids = new Set(merged[key].map(function(r){ return r.id; }));
-        var extra = local[key].filter(function(r){ return r.id && !ids.has(r.id); });
-        if (extra.length) merged[key] = merged[key].concat(extra);
-      } else if (typeof local[key]==='object' && local[key] && typeof merged[key]==='object' && merged[key]) {
-        Object.keys(local[key]).forEach(function(k){ if(!merged[key][k]) merged[key][k]=local[key][k]; });
-      }
-    });
-    return merged;
-  }
-
-  window._fbReady   = false;
-  window._fbSyncing = false;
-
-  window.saveToFirestore = function(d) {
-    if (!window._db) return Promise.resolve();
-    return window._db.collection('fieldtrace').doc('main').set({ data:JSON.stringify(d), updatedAt:new Date().toISOString() });
-  };
-  window.loadFromFirestore = function() {
-    if (!window._db) return Promise.resolve(null);
-    return window._db.collection('fieldtrace').doc('main').get().then(function(doc) {
-      return (doc.exists && doc.data().data) ? JSON.parse(doc.data().data) : null;
-    });
-  };
-  window.listenFirestore = function(fn) {
-    if (!window._db) return;
-    window._db.collection('fieldtrace').doc('main').onSnapshot(function(snap) {
-      if (snap.exists && snap.data().data && !window._fbSyncing) {
-        try { fn(JSON.parse(snap.data().data)); } catch(e) {}
-      }
-    });
-  };
-
-  // Override saveDB to also save to Firestore
-  var _origSaveDB = saveDB;
-  saveDB = function() {
-    _origSaveDB();
-    if (window._fbReady && window.saveToFirestore) {
-      window._fbSyncing = true;
-      window.saveToFirestore(db)
-        .then(function(){ setTimeout(function(){ window._fbSyncing=false; }, 2000); })
-        .catch(function(){ window._fbSyncing=false; });
-    }
-  };
-
-  // Load Firebase SDK dynamically - won't block app from working
-  loadFirebase(function() {
-    try {
-      if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
-      window._db = firebase.firestore();
-      window._fbReady = true;
-      console.log('Firebase connected successfully');
-      // Sync from cloud if logged in
-      if (sessionStorage.getItem('ft_auth') === '1') {
-        window.loadFromFirestore().then(function(remote) {
-          if (remote) {
-            db = mergeDB(db, remote);
-            try { localStorage.setItem('farmCertDB_v3', JSON.stringify(db)); } catch(e) {}
-            window.saveToFirestore(db);
-            updateSidebar();
-          }
-          window.listenFirestore(function(remote) {
-            if (!window._fbSyncing) {
-              db = mergeDB(db, remote);
-              try { localStorage.setItem('farmCertDB_v3', JSON.stringify(db)); } catch(e) {}
-              updateSidebar();
-            }
-          });
-        }).catch(function(e){ console.warn('Firestore sync failed:', e.message); });
-      }
-    } catch(e) { console.warn('Firebase init failed:', e.message); }
-  });
 })();
 
 // ══ MOBILE SIDEBAR ═══════════════════════════════════════════════════════════
