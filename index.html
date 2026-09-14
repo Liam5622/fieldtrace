@@ -566,7 +566,7 @@
     font-weight: 700; color: #3D5240; font-size: 13px;
   }
   .var-input {
-    width: 100%; background: #E8EAD8;
+    width: 100%; background: #ffffff;
     border: 1px solid rgba(120,140,80,0.25); border-radius: 5px;
     padding: 6px 8px; color: #2C3626; font-size: 12.5px;
     outline: none; font-family: Georgia, serif;
@@ -1921,9 +1921,11 @@ function buildSeasonSummary() {
     .sort((a,b) => a[0].localeCompare(b[0]))
     .map(([name, d]) => ({ name, lbs: d.lbs, boxes20lb: d.boxes20lb, flats: d.flats, days: d.days.size }));
 
+  const grandFlats = dailyRows.reduce((a,r) => a + r.flats, 0);
+
   return {
     firstDate, lastDate, totalDays,
-    grandLbs, grandBoxes, grandHours, crewHrsTotal,
+    grandLbs, grandBoxes, grandFlats, grandHours, crewHrsTotal,
     avgLbsPerDay, avgHrsPerDay, avgBoxesPerDay,
     bestDay, varieties, blocks, dailyRows,
   };
@@ -1973,7 +1975,8 @@ function renderSeasonSummary() {
       <td>${r.date}</td>
       <td class="r" style="color:#3D5240;font-weight:${isBest?'700':'400'};">${r.lbs.toFixed(1)}</td>
       <td class="r">${r.boxes.toFixed(0)}</td>
-      <td class="r">${r.pickers || r.crewNum || '—'}</td>
+      <td class="r">${r.boxes.toFixed(0)}</td>
+      <td class="r">${r.flats ? r.flats.toFixed(0) : "—"}</td>
       <td class="r">${r.hours > 0 ? r.hours.toFixed(1) : r.crewHours > 0 ? r.crewHours.toFixed(1) : '—'}</td>
       <td style="font-size:11px;color:#3D5240;">${r.varieties.map(v=>v.variety).filter(Boolean).join(', ') || '—'}</td>
     </tr>`;
@@ -2014,6 +2017,7 @@ function renderSeasonSummary() {
       <div class="ss-kpi-grid">
         <div class="ss-kpi"><div class="ss-kpi-val" style="color:#3D5240;">${s.grandLbs.toFixed(1)}</div><div class="ss-kpi-lbl">🌾 Total Lbs</div></div>
         <div class="ss-kpi"><div class="ss-kpi-val" style="color:#3D5240;">${s.grandBoxes.toFixed(0)}</div><div class="ss-kpi-lbl">📦 Total Boxes</div></div>
+        <div class="ss-kpi"><div class="ss-kpi-val" style="color:#3D5240;">${s.grandFlats.toFixed(0)}</div><div class="ss-kpi-lbl">🫙 Total Flats</div></div>
         <div class="ss-kpi"><div class="ss-kpi-val" style="color:#A0622A;">${s.grandHours.toFixed(1)}</div><div class="ss-kpi-lbl">⏱️ Total Picker Hrs</div></div>
         <div class="ss-kpi"><div class="ss-kpi-val" style="color:#6B7C5A;">${s.avgLbsPerDay}</div><div class="ss-kpi-lbl">📈 Avg Lbs/Day</div></div>
         <div class="ss-kpi"><div class="ss-kpi-val" style="color:#A0622A;">${s.avgHrsPerDay}</div><div class="ss-kpi-lbl">⏱️ Avg Hrs/Day</div></div>
@@ -2033,6 +2037,7 @@ function renderSeasonSummary() {
             <td>SEASON TOTAL</td>
             <td class="r">${s.grandLbs.toFixed(1)}</td>
             <td class="r">${s.grandBoxes.toFixed(0)}</td>
+            <td class="r">${s.grandFlats.toFixed(0)}</td>
             <td class="r">${s.totalDays}</td>
             <td class="r">${s.avgLbsPerDay}</td>
             <td>100%</td>
@@ -2043,7 +2048,7 @@ function renderSeasonSummary() {
       <div class="ss-section-hdr" style="margin-top:28px;">Daily Harvest History</div>
       <table class="ss-daily-table">
         <thead><tr>
-          <th>Date</th><th class="r">Lbs</th><th class="r">Boxes</th>
+          <th>Date</th><th class="r">Lbs</th><th class="r">Boxes</th><th class="r">Flats</th>
           <th class="r">Pickers</th><th class="r">Hrs Worked</th><th>Varieties</th>
         </tr></thead>
         <tbody>${dailyRows}</tbody>
@@ -2051,6 +2056,7 @@ function renderSeasonSummary() {
           <td style="font-weight:700;color:#3D5240;padding:9px 10px;">TOTALS / AVG</td>
           <td class="r" style="font-weight:700;color:#3D5240;padding:9px 10px;">${s.grandLbs.toFixed(1)}</td>
           <td class="r" style="padding:9px 10px;">${s.grandBoxes.toFixed(0)}</td>
+          <td class="r" style="padding:9px 10px;">${s.grandFlats.toFixed(0)}</td>
           <td class="r" style="padding:9px 10px;">—</td>
           <td class="r" style="padding:9px 10px;">${s.grandHours.toFixed(1)}</td>
           <td style="padding:9px 10px;"></td>
@@ -2734,7 +2740,7 @@ function addVarietyRow(variety='', lbs='', boxes20lb='', flats='', pickers='', h
   tr.className = 'var-row';
   tr.innerHTML = `
     <td>
-      <select class="var-input wide" oninput="updateDhlTotals()" onchange="updateDhlTotals()" style="background:#fff;border:1px solid #A8BC8C;border-radius:5px;padding:5px 8px;color:#2C3626;font-size:13px;font-family:Georgia,serif;width:100%;">
+      <select class="var-input wide" oninput="updateDhlTotals()" onchange="updateDhlTotals()" style="background:#ffffff;border:1px solid rgba(120,140,80,0.25);border-radius:5px;padding:5px 8px;color:#2C3626;font-size:13px;font-family:Georgia,serif;width:100%;">
         <option value="">-- Select Variety --</option>
         <option value="Paulk"      ${variety==='Paulk'      ?'selected':''}>Paulk</option>
         <option value="Supreme"    ${variety==='Supreme'    ?'selected':''}>Supreme</option>
