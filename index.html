@@ -862,14 +862,6 @@
   </div>
 </div>
 
-  <!-- Settings Button at bottom of sidebar -->
-  <div style="margin-top:auto;padding:12px 8px;border-top:1px solid rgba(120,140,80,0.15);">
-    <button class="home-btn" onclick="openSettings()" id="settings-btn" style="width:100%;display:flex;align-items:center;gap:9px;">
-      ⚙️ <span>Settings & Backup</span>
-    </button>
-  </div>
-
-
 <!-- ══ MAIN ══ -->
 <div id="main">
 
@@ -1496,6 +1488,8 @@ function goHome() {
   activeSection = null; activeFolder = null;
   showView('home');
   updateSidebar();
+  var fab = document.getElementById('settings-fab');
+  if (fab) fab.style.display = 'flex';
 }
 
 function openFolder(folder) {
@@ -5954,6 +5948,9 @@ showView = function(name) {
     if (sidebar) sidebar.classList.remove('mobile-open');
     if (overlay) overlay.style.display = 'none';
   }
+  // Show settings FAB only on home dashboard
+  var fab = document.getElementById('settings-fab');
+  if (fab) fab.style.display = (name === 'home') ? 'flex' : 'none';
 };
 
 // ══ PASSWORD ══════════════════════════════════════════════════════════════════
@@ -5964,6 +5961,8 @@ function checkPassword() {
     sessionStorage.setItem('ft_auth', '1');
     loadDB();
     updateSidebar();
+    var fab = document.getElementById('settings-fab');
+    if (fab) fab.style.display = 'flex';
   } else {
     var err = document.getElementById('pw-error');
     if (err) err.style.display = 'block';
@@ -5977,6 +5976,8 @@ if (sessionStorage.getItem('ft_auth') === '1') {
   if (ps) ps.style.display = 'none';
   loadDB();
   updateSidebar();
+  var fab = document.getElementById('settings-fab');
+  if (fab) fab.style.display = 'flex';
 } else {
   setTimeout(function(){
     var inp = document.getElementById('pw-input');
@@ -5984,5 +5985,9 @@ if (sessionStorage.getItem('ft_auth') === '1') {
   }, 200);
 }
 </script>
+
+<!-- ══ SETTINGS BUTTON — Fixed Bottom ══ -->
+<button id="settings-fab" onclick="openSettings()" style="position:fixed;bottom:20px;right:20px;z-index:998;background:#2C3626;border:none;border-radius:30px;padding:12px 20px;color:#D4DCC4;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;box-shadow:0 4px 20px rgba(44,54,38,0.35);display:none;align-items:center;gap:8px;">⚙️ <span>Settings</span></button>
+
 </body>
 </html>
