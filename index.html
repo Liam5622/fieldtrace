@@ -976,6 +976,7 @@
             <div class="fo-divider"></div>
             <div class="fo-stat"><div class="sv" id="fo-cats">0</div><div class="sl" style="color:#6B7C5A;">Log Categories</div></div>
           </div>
+          <div id="fo-tools" style="margin-top:14px;"></div>
         </div>
       </div>
     </div>
@@ -1776,6 +1777,16 @@ function renderFolderOverview(folder) {
   document.getElementById('fo-issues').style.color   = issues > 0 ? '#C4A882' : '#70c070';
   document.getElementById('fo-cats').textContent     = fd.sections.length;
   document.getElementById('fo-cats').style.color     = '#A8BC8C';
+
+  // Add Print Full GAP Report button for GAP folder
+  var foTools = document.getElementById('fo-tools');
+  if (foTools) {
+    if (folder === 'gap') {
+      foTools.innerHTML = '<button onclick="printFullGapReport()" style="background:#2C3626;border:none;border-radius:6px;padding:8px 18px;color:#D4DCC4;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">🖨️ Print Full GAP Report</button>';
+    } else {
+      foTools.innerHTML = '';
+    }
+  }
 
   const grid = document.getElementById('fo-grid');
   grid.innerHTML = '';
@@ -4951,6 +4962,140 @@ function printCoolerLog() {
 
 
 // ── Generic GAP Section Print Log ────────────────────────────────────────────
+function printFullGapReport() {
+  var today = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  var now   = new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+
+  var sections = [
+    { id:'pest',      title:'Pest Control',         icon:'🐛',
+      cols:[{key:'date',label:'Date'},{key:'area',label:'Area'},{key:'pesticide',label:'Pesticide / Method'},{key:'applicator',label:'Applicator'},{key:'reentry',label:'Re-Entry'},{key:'status',label:'Status'},{key:'notes',label:'Notes'}] },
+    { id:'cleaning',  title:'Cleaning Schedule',    icon:'🧹',
+      cols:[{key:'date',label:'Date'},{key:'area',label:'Area'},{key:'method',label:'Method / Product'},{key:'cleanedBy',label:'Cleaned By'},{key:'verifiedBy',label:'Verified By'},{key:'status',label:'Status'}] },
+    { id:'cooler',    title:'Cooler Temperature',   icon:'🌡️',
+      cols:[{key:'date',label:'Date'},{key:'time',label:'Time'},{key:'coolerId',label:'Cooler'},{key:'setTemp',label:'Set °F'},{key:'actualTemp',label:'Actual °F'},{key:'checkedBy',label:'Checked By'},{key:'status',label:'Status'}] },
+    { id:'water',     title:'Water Testing',        icon:'💧',
+      cols:[{key:'date',label:'Date'},{key:'source',label:'Source'},{key:'testType',label:'Test Type'},{key:'result',label:'Result'},{key:'testedBy',label:'Tested By'},{key:'labName',label:'Lab'},{key:'status',label:'Status'}] },
+    { id:'equipment', title:'Equipment Inspection', icon:'🔧',
+      cols:[{key:'date',label:'Date'},{key:'equipment',label:'Equipment'},{key:'inspector',label:'Inspector'},{key:'issuesFound',label:'Issues Found'},{key:'actionTaken',label:'Action Taken'},{key:'status',label:'Status'}] },
+    { id:'harvest',   title:'Harvest Records',      icon:'🌾',
+      cols:[{key:'date',label:'Date'},{key:'crop',label:'Crop'},{key:'field',label:'Field'},{key:'quantity',label:'Qty (lbs)'},{key:'lotNumber',label:'Lot #'},{key:'harvestedBy',label:'Harvested By'},{key:'status',label:'Status'}] },
+    { id:'visitor',   title:'Visitor Log',          icon:'📋',
+      cols:[{key:'date',label:'Date'},{key:'visitorName',label:'Visitor'},{key:'company',label:'Company'},{key:'purpose',label:'Purpose'},{key:'hostEmployee',label:'Host'},{key:'timeIn',label:'In'},{key:'timeOut',label:'Out'}] },
+  ];
+
+  // Totals across all GAP sections
+  var totalRecs = 0, totalPass = 0, totalFail = 0, totalDocs = 0;
+  sections.forEach(function(s) {
+    var recs = getRecords(s.id);
+    totalRecs += recs.length;
+    recs.forEach(function(r) {
+      var st = (r.status||'').toLowerCase();
+      if (st==='completed'||st==='pass'||st==='normal'||st==='released') totalPass++;
+      if (st==='overdue'||st==='fail'||st==='critical'||st==='out of service') totalFail++;
+      // Check for attached documents
+      Object.keys(r).forEach(function(k){ if(k.indexOf('doc_')===0 && r[k] && r[k].length > 10) totalDocs++; });
+    });
+  });
+
+  function statusColor(s) {
+    if (!s) return '#3D5240';
+    var sl = s.toLowerCase();
+    if (sl==='completed'||sl==='pass'||sl==='normal'||sl==='released') return '#2D6A30';
+    if (sl==='overdue'||sl==='fail'||sl==='critical'||sl==='out of service') return '#C62828';
+    if (sl==='needs repair'||sl==='warning'||sl==='pending'||sl==='on hold') return '#9A4F15';
+    return '#3D5240';
+  }
+
+  // Build each section table
+  var sectionsHtml = sections.map(function(s) {
+    var recs = getRecords(s.id).slice().sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+    if (recs.length === 0) {
+      return '<div class="sec-block">'
+        + '<div class="sec-title">' + s.icon + ' ' + s.title + '</div>'
+        + '<p style="color:#6B7C5A;font-size:12px;padding:10px 0;">No records in this section.</p>'
+        + '</div>';
+    }
+    var headerRow = '<tr>' + s.cols.map(function(c){ return '<th>' + c.label + '</th>'; }).join('') + '<th>Doc</th></tr>';
+    var rows = recs.map(function(r, i) {
+      var cells = s.cols.map(function(c) {
+        var val = r[c.key] || '—';
+        if (c.key==='status') return '<td style="color:' + statusColor(val) + ';font-weight:700;">' + val + '</td>';
+        if (c.key==='notes')  return '<td style="font-size:11px;color:#6B7C5A;">' + val + '</td>';
+        return '<td>' + val + '</td>';
+      }).join('');
+      // Check for any doc_ field
+      var hasDoc = Object.keys(r).some(function(k){ return k.indexOf('doc_')===0 && r[k] && r[k].length > 10; });
+      cells += hasDoc ? '<td><span style="background:#E8F0E4;color:#3D5240;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;">📎 Attached</span></td>' : '<td style="color:#C8C4A8;">—</td>';
+      return '<tr style="background:' + (i%2===0?'#f9f9f7':'#ffffff') + ';">' + cells + '</tr>';
+    }).join('');
+    return '<div class="sec-block">'
+      + '<div class="sec-title">' + s.icon + ' ' + s.title + ' <span style="font-size:11px;font-weight:400;color:#6B7C5A;">(' + recs.length + ' records)</span></div>'
+      + '<table><thead>' + headerRow + '</thead><tbody>' + rows + '</tbody></table>'
+      + '</div>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<title>GAP Certification Report — FieldTrace</title>'
+    + '<style>'
+    + '* { box-sizing:border-box; margin:0; padding:0; }'
+    + 'body { font-family:Georgia,serif; font-size:12px; color:#2C3626; background:#fff; }'
+    + '.header { background:#2C3626; padding:24px 32px; display:flex; justify-content:space-between; align-items:flex-start; }'
+    + '.header-left h1 { font-size:20px; font-weight:900; color:#ffffff; }'
+    + '.header-left .sub { font-size:10px; color:#A8BC8C; letter-spacing:1.5px; text-transform:uppercase; margin-top:3px; }'
+    + '.header-right { text-align:right; font-size:11px; color:#D4DCC4; line-height:1.7; }'
+    + '.summary { background:#3D5240; display:flex; }'
+    + '.sum-item { flex:1; padding:12px 16px; text-align:center; border-right:1px solid rgba(255,255,255,0.1); }'
+    + '.sum-item:last-child { border-right:none; }'
+    + '.sum-val { font-size:20px; font-weight:900; color:#fff; line-height:1; }'
+    + '.sum-lbl { font-size:9px; color:rgba(168,188,140,0.8); text-transform:uppercase; letter-spacing:1px; margin-top:2px; font-weight:700; }'
+    + '.body { padding:24px 32px; }'
+    + '.sec-block { margin-bottom:28px; page-break-inside:avoid; }'
+    + '.sec-title { font-size:12px; font-weight:800; color:#3D5240; text-transform:uppercase; letter-spacing:1.5px; padding-bottom:7px; border-bottom:2px solid #2C3626; margin-bottom:10px; }'
+    + 'table { width:100%; border-collapse:collapse; font-size:11.5px; }'
+    + 'th { background:#2C3626; color:#E8EAD8; padding:7px 9px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; }'
+    + 'td { padding:7px 9px; border-bottom:1px solid #E8EAD8; vertical-align:top; }'
+    + '.sig-block { display:flex; gap:32px; margin-top:32px; padding-top:20px; border-top:1px solid #E8EAD8; }'
+    + '.sig-item { flex:1; border-top:1.5px solid #2C3626; padding-top:5px; font-size:10px; color:#6B7C5A; text-transform:uppercase; letter-spacing:1px; font-weight:700; }'
+    + '.footer { margin-top:16px; font-size:10px; color:#A8BC8C; display:flex; justify-content:space-between; border-top:1px solid #E8EAD8; padding-top:8px; }'
+    + '.print-btn { background:#3D5240; color:#E8EAD8; border:none; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:13px; margin:16px 32px; display:block; font-family:Georgia,serif; }'
+    + '@media print { .print-btn { display:none !important; } }'
+    + '</style></head><body>'
+    + '<div class="header">'
+    +   '<div class="header-left">'
+    +     '<h1>🌿 GAP Certification Report</h1>'
+    +     '<div class="sub">FieldTrace Farm Operations Platform</div>'
+    +   '</div>'
+    +   '<div class="header-right">'
+    +     'Generated: ' + today + '<br>Time: ' + now
+    +   '</div>'
+    + '</div>'
+    + '<div class="summary">'
+    +   '<div class="sum-item"><div class="sum-val">' + totalRecs + '</div><div class="sum-lbl">Total Records</div></div>'
+    +   '<div class="sum-item"><div class="sum-val" style="color:#90EE90;">' + totalPass + '</div><div class="sum-lbl">Passed / Complete</div></div>'
+    +   '<div class="sum-item"><div class="sum-val" style="color:#ffaa80;">' + (totalRecs - totalPass - totalFail) + '</div><div class="sum-lbl">Pending / Scheduled</div></div>'
+    +   '<div class="sum-item"><div class="sum-val" style="color:#ff8080;">' + totalFail + '</div><div class="sum-lbl">Failed / Overdue</div></div>'
+    +   '<div class="sum-item"><div class="sum-val">' + totalDocs + '</div><div class="sum-lbl">Docs Attached</div></div>'
+    + '</div>'
+    + '<button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>'
+    + '<div class="body">'
+    + sectionsHtml
+    + '<div class="sig-block">'
+    +   '<div class="sig-item">Farm Manager Signature</div>'
+    +   '<div class="sig-item">Date of Review</div>'
+    +   '<div class="sig-item">Auditor / Inspector Signature</div>'
+    + '</div>'
+    + '<div class="footer">'
+    +   '<span>🌿 FieldTrace — GAP Certification Report</span>'
+    +   '<span>Generated ' + today + ' at ' + now + '</span>'
+    + '</div>'
+    + '</div>'
+    + '</body></html>';
+
+  var win = window.open('', '_blank', 'width=1050,height=800');
+  if (win) { win.document.write(html); win.document.close(); }
+  else { showToast('Please allow popups to print.', 'danger'); }
+}
+
 function printGapLog(section) {
   const records = getRecords(section);
   if (records.length === 0) {
