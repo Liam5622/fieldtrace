@@ -324,11 +324,11 @@
     .mobile-back-btn { display: inline-flex !important; }
     /* Sidebar hidden by default on mobile */
     #sidebar {
-      position: fixed; left: -260px; top: 0; height: 100vh;
-      z-index: 1000; transition: left 0.25s ease; width: 260px !important; min-width: 260px !important;
+      position: fixed; left: -100%; top: 0; height: 100vh;
+      z-index: 1000; transition: left 0.25s ease; width: 80vw !important; min-width: 260px !important; max-width: 300px !important;
     }
     #sidebar.mobile-open { left: 0; }
-    #main { width: 100vw !important; }
+    #main { width: 100vw !important; margin-left: 0 !important; }
 
     /* Mobile header bar */
     #mobile-header {
@@ -5987,7 +5987,7 @@ if (sessionStorage.getItem('ft_auth') === '1') {
 </script>
 
 <!-- ══ SETTINGS BUTTON — Fixed Bottom ══ -->
-<button id="settings-fab" onclick="openSettings()" style="position:fixed;bottom:20px;right:20px;z-index:998;background:#2C3626;border:none;border-radius:30px;padding:12px 20px;color:#D4DCC4;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;box-shadow:0 4px 20px rgba(44,54,38,0.35);display:none;align-items:center;gap:8px;">⚙️ <span>Settings</span></button>
+<button id="settings-fab" onclick="openSettings()" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:998;background:#2C3626;border:none;border-radius:30px;padding:12px 24px;color:#D4DCC4;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;box-shadow:0 4px 20px rgba(44,54,38,0.35);display:none;align-items:center;gap:8px;white-space:nowrap;">⚙️ <span>Settings & Backup</span></button>
 
 </body>
 </html>
