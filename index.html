@@ -634,7 +634,6 @@
     window._fbReady   = false;
     window._fbSyncing = false;
 
-    // Merge two databases - keeps ALL records from both devices
     function mergeDB(local, remote) {
       if (!remote) return local;
       if (!local)  return remote;
@@ -694,7 +693,6 @@
         window._db = firebase.firestore();
         window._fbReady = true;
         console.log('Firebase connected successfully');
-
         if (sessionStorage.getItem('ft_auth') === '1') {
           loadFromFirestore().then(function(remoteDb) {
             if (remoteDb) {
@@ -702,7 +700,6 @@
               try { localStorage.setItem('farmCertDB_v3', JSON.stringify(db)); } catch(e2) {}
               saveToFirestore(db);
               updateSidebar();
-              console.log('Firestore merged successfully');
             }
             listenFirestore(function(remote) {
               if (!window._fbSyncing) {
@@ -1466,9 +1463,8 @@ function saveDB() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {}
   if (typeof saveToFirestore === "function" && window._fbReady) {
     window._fbSyncing = true;
-    saveToFirestore(db).then(function(){ setTimeout(function(){ window._fbSyncing = false; },2000); }).catch(function(){ window._fbSyncing = false; });
+    saveToFirestore(db).then(function(){ setTimeout(function(){ window._fbSyncing=false; },2000); }).catch(function(){ window._fbSyncing=false; });
   }
-}
 
 // ══ COUNTS ═══════════════════════════════════════════════════════════════════
 function countRec(ids)    { return ids.reduce((a,id) => a + getRecords(id).length, 0); }
