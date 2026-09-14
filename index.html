@@ -862,6 +862,14 @@
   </div>
 </div>
 
+  <!-- Settings Button at bottom of sidebar -->
+  <div style="margin-top:auto;padding:12px 8px;border-top:1px solid rgba(120,140,80,0.15);">
+    <button class="home-btn" onclick="openSettings()" id="settings-btn" style="width:100%;display:flex;align-items:center;gap:9px;">
+      ⚙️ <span>Settings & Backup</span>
+    </button>
+  </div>
+
+
 <!-- ══ MAIN ══ -->
 <div id="main">
 
@@ -5714,6 +5722,213 @@ loadDB();
 
   if (changed) { try { localStorage.setItem('farmCertDB_v3', JSON.stringify(db)); } catch(e) {} }
 })();
+
+// ══ SETTINGS PANEL ═══════════════════════════════════════════════════════════
+
+function cancelImport() { var c=document.getElementById("import-confirm"); if(c) c.remove(); }
+
+function triggerImport() { var f=document.getElementById("import-file"); if(f) f.click(); }
+
+function closeSettings() { var p=document.getElementById("settings-panel"); if(p) p.remove(); }
+
+function openSettings() {
+  // Remove existing panel if open
+  var existing = document.getElementById('settings-panel');
+  if (existing) { existing.remove(); return; }
+
+  var lastBackup = localStorage.getItem('ft_lastBackup') || 'Never';
+  var fbStatus   = window._fbReady ? '🟢 Connected' : '🔴 Not connected';
+  var recCount   = 0;
+  var sections   = ['pest','cleaning','cooler','water','equipment','harvest','visitor',
+                    'emp_profile','emp_training','emp_certif','emp_discipline','emp_injury',
+                    'hrv_daily','hrv_variety','hrv_weather','hrv_crew','hrv_payrates',
+                    'fert_application','fert_product','fert_soil',
+                    'spray_log','spray_product'];
+  sections.forEach(function(s){ recCount += (db[s] || []).length; });
+
+  var panel = document.createElement('div');
+  panel.id = 'settings-panel';
+  panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(44,54,38,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+
+  panel.innerHTML =
+    '<div style="background:#fff;border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(44,54,38,0.3);">' +
+
+      // Header
+      '<div style="background:#2C3626;padding:20px 24px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">' +
+        '<div>' +
+          '<div style="font-size:18px;font-weight:800;color:#E8EAD8;">⚙️ Settings & Backup</div>' +
+          '<div style="font-size:11px;color:#A8BC8C;margin-top:3px;">FieldTrace Farm Operations</div>' +
+        '</div>' +
+        '<button onclick="closeSettings()" style="background:rgba(255,255,255,0.1);border:none;border-radius:8px;padding:6px 12px;color:#D4DCC4;font-size:13px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">✕ Close</button>' +
+      '</div>' +
+
+      // Status section
+      '<div style="padding:20px 24px;border-bottom:1px solid #E8EAD8;">' +
+        '<div style="font-size:10px;font-weight:800;color:#6B7C5A;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">System Status</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<div style="background:#F5F4EE;border-radius:8px;padding:12px 14px;">' +
+            '<div style="font-size:20px;font-weight:900;color:#2C3626;">' + recCount + '</div>' +
+            '<div style="font-size:10px;color:#6B7C5A;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Total Records</div>' +
+          '</div>' +
+          '<div style="background:#F5F4EE;border-radius:8px;padding:12px 14px;">' +
+            '<div style="font-size:13px;font-weight:700;color:#2C3626;margin-top:2px;">' + fbStatus + '</div>' +
+            '<div style="font-size:10px;color:#6B7C5A;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Firebase</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      // Backup section
+      '<div style="padding:20px 24px;border-bottom:1px solid #E8EAD8;">' +
+        '<div style="font-size:10px;font-weight:800;color:#6B7C5A;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Data Backup</div>' +
+        '<div style="font-size:12px;color:#6B7C5A;margin-bottom:14px;">Last backup: <strong style="color:#2C3626;">' + lastBackup + '</strong></div>' +
+        '<button onclick="exportBackup()" style="width:100%;background:#3D5240;border:none;border-radius:10px;padding:13px;color:#E8EAD8;font-size:14px;font-weight:700;cursor:pointer;font-family:Georgia,serif;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">📥 Export Backup File</button>' +
+        '<div style="font-size:11px;color:#6B7C5A;text-align:center;margin-bottom:14px;">Downloads all your records as a backup file you can save anywhere</div>' +
+        '<button onclick="triggerImport()" style="width:100%;background:transparent;border:2px solid #A8BC8C;border-radius:10px;padding:12px;color:#3D5240;font-size:14px;font-weight:700;cursor:pointer;font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;gap:8px;">📤 Import Backup File</button>' +
+        '<input type="file" id="import-file" accept=".json" style="display:none;" onchange="importBackup(event)">' +
+        '<div style="font-size:11px;color:#6B7C5A;text-align:center;margin-top:6px;">Restore all records from a previously exported backup file</div>' +
+      '</div>' +
+
+      // Password section
+      '<div style="padding:20px 24px;border-bottom:1px solid #E8EAD8;">' +
+        '<div style="font-size:10px;font-weight:800;color:#6B7C5A;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Access</div>' +
+        '<div style="font-size:13px;color:#2C3626;font-weight:600;margin-bottom:4px;">Current Password</div>' +
+        '<div style="font-size:12px;color:#6B7C5A;margin-bottom:12px;">Share this with your team members to give them access</div>' +
+        '<div style="background:#F5F4EE;border-radius:8px;padding:12px 16px;font-size:16px;font-weight:800;color:#2C3626;letter-spacing:3px;text-align:center;">Muscadine983</div>' +
+      '</div>' +
+
+      // About section
+      '<div style="padding:20px 24px;">' +
+        '<div style="font-size:10px;font-weight:800;color:#6B7C5A;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">About</div>' +
+        '<div style="font-size:13px;color:#2C3626;font-weight:600;">🌿 FieldTrace</div>' +
+        '<div style="font-size:12px;color:#6B7C5A;margin-top:3px;">Farm Operations & Compliance Platform</div>' +
+        '<div style="font-size:11px;color:#A8BC8C;margin-top:6px;">Built for blueberry & muscadine operations · Southeast US</div>' +
+      '</div>' +
+
+    '</div>';
+
+  document.body.appendChild(panel);
+  panel.addEventListener('click', function(e){ if(e.target === panel) panel.remove(); });
+}
+
+function exportBackup() {
+  var backup = {
+    version:   '1.0',
+    exportedAt: new Date().toISOString(),
+    farmName:  'FieldTrace Farm',
+    data:      db
+  };
+
+  var json = JSON.stringify(backup, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  var date = new Date().toISOString().split('T')[0];
+  a.href     = url;
+  a.download = 'fieldtrace_backup_' + date + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // Record last backup time
+  var now = new Date().toLocaleString();
+  localStorage.setItem('ft_lastBackup', now);
+  showToast('✅ Backup downloaded! Save it somewhere safe.', 'success');
+
+  // Refresh the panel to show updated backup time
+  var panel = document.getElementById('settings-panel');
+  if (panel) { panel.remove(); openSettings(); }
+}
+
+function importBackup(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var backup = JSON.parse(e.target.result);
+
+      // Validate it looks like a FieldTrace backup
+      if (!backup.data) {
+        showToast('❌ Invalid backup file. Please use a FieldTrace backup.', 'danger');
+        return;
+      }
+
+      // Confirm before overwriting
+      var recCount = 0;
+      Object.keys(backup.data).forEach(function(k){
+        if (Array.isArray(backup.data[k])) recCount += backup.data[k].length;
+      });
+
+      var confirmDiv = document.getElementById('import-confirm');
+      if (confirmDiv) confirmDiv.remove();
+
+      var cf = document.createElement('div');
+      cf.id = 'import-confirm';
+      cf.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(44,54,38,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      cf.innerHTML =
+        '<div style="background:#fff;border-radius:14px;max-width:400px;width:100%;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(44,54,38,0.3);">' +
+          '<div style="font-size:36px;margin-bottom:12px;">📤</div>' +
+          '<div style="font-size:17px;font-weight:800;color:#2C3626;margin-bottom:8px;">Restore Backup?</div>' +
+          '<div style="font-size:13px;color:#6B7C5A;margin-bottom:6px;">Backup from: <strong>' + (backup.exportedAt ? backup.exportedAt.split('T')[0] : 'Unknown') + '</strong></div>' +
+          '<div style="font-size:13px;color:#6B7C5A;margin-bottom:20px;">This will restore <strong>' + recCount + ' records</strong>. Your current data will be merged with the backup.</div>' +
+          '<div style="display:flex;gap:10px;">' +
+            '<button onclick="cancelImport()" style="flex:1;background:transparent;border:1.5px solid #A8BC8C;border-radius:8px;padding:11px;color:#3D5240;font-size:14px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">Cancel</button>' +
+            '<button onclick="confirmImport()" style="flex:1;background:#3D5240;border:none;border-radius:8px;padding:11px;color:#E8EAD8;font-size:14px;font-weight:700;cursor:pointer;font-family:Georgia,serif;">✅ Restore</button>' +
+          '</div>' +
+        '</div>';
+
+      document.body.appendChild(cf);
+
+      // Store backup data temporarily
+      window._pendingImport = backup.data;
+
+    } catch(err) {
+      showToast('❌ Could not read backup file. Please check the file and try again.', 'danger');
+    }
+  };
+  reader.readAsText(file);
+
+  // Reset file input so same file can be selected again
+  event.target.value = '';
+}
+
+function confirmImport() {
+  var cf = document.getElementById('import-confirm');
+  if (cf) cf.remove();
+
+  if (!window._pendingImport) {
+    showToast('❌ No backup data found.', 'danger');
+    return;
+  }
+
+  // Merge backup into current db
+  var backup = window._pendingImport;
+  Object.keys(backup).forEach(function(key) {
+    if (!db[key]) {
+      db[key] = backup[key];
+    } else if (Array.isArray(backup[key]) && Array.isArray(db[key])) {
+      // Merge by ID - keep all unique records
+      var existingIds = new Set(db[key].map(function(r){ return r.id; }));
+      var newRecs = backup[key].filter(function(r){ return r.id && !existingIds.has(r.id); });
+      db[key] = db[key].concat(newRecs);
+    } else if (typeof backup[key] === 'object' && backup[key] && typeof db[key] === 'object' && db[key]) {
+      Object.keys(backup[key]).forEach(function(k){
+        if (!db[key][k]) db[key][k] = backup[key][k];
+      });
+    }
+  });
+
+  window._pendingImport = null;
+  saveDB();
+  updateSidebar();
+
+  var panel = document.getElementById('settings-panel');
+  if (panel) panel.remove();
+
+  showToast('✅ Backup restored successfully!', 'success');
+}
 
 // ══ MOBILE SIDEBAR ═══════════════════════════════════════════════════════════
 function toggleMobileSidebar() {
