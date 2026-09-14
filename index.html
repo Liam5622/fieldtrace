@@ -1118,6 +1118,7 @@ const FIELDS = {
     {key:'nextScheduled',label:'Next Scheduled',type:'date'},
     {key:'status',label:'Status',type:'select',options:['Completed','Scheduled','Overdue']},
     {key:'notes',label:'Notes',type:'textarea'},
+    {key:"doc_pest", label:"Supporting Document (Receipt / Report / Photo)", type:"document"},
   ],
   cleaning:[
     {key:'date',label:'Date',type:'date'},
@@ -1128,6 +1129,7 @@ const FIELDS = {
     {key:'frequency',label:'Frequency',type:'select',options:['Daily','Weekly','Monthly','As Needed']},
     {key:'status',label:'Status',type:'select',options:['Completed','Scheduled','Overdue']},
     {key:'notes',label:'Notes',type:'textarea'},
+    {key:"doc_cleaning", label:"Supporting Document (Checklist / Photo)", type:"document"},
   ],
   cooler:[
     {key:'date',label:'Date',type:'date'},
@@ -1138,6 +1140,7 @@ const FIELDS = {
     {key:'checkedBy',label:'Checked By',type:'text'},
     {key:'status',label:'Status',type:'select',options:['Normal','Warning','Critical']},
     {key:'notes',label:'Notes',type:'textarea'},
+    {key:"doc_cooler", label:"Supporting Document (Log Sheet / Photo)", type:"document"},
   ],
   water:[
     {key:'date',label:'Date',type:'date'},
@@ -1159,6 +1162,7 @@ const FIELDS = {
     {key:'nextInspection',label:'Next Inspection',type:'date'},
     {key:'status',label:'Status',type:'select',options:['Pass','Needs Repair','Out of Service']},
     {key:'notes',label:'Notes',type:'textarea'},
+    {key:"doc_equipment", label:"Supporting Document (Inspection Report / Photo)", type:"document"},
   ],
   harvest:[
     {key:'date',label:'Harvest Date',type:'date'},
@@ -1169,6 +1173,7 @@ const FIELDS = {
     {key:'lotNumber',label:'Lot Number',type:'text'},
     {key:'status',label:'Status',type:'select',options:['Released','On Hold','Rejected']},
     {key:'notes',label:'Notes',type:'textarea'},
+    {key:"doc_harvest_gap", label:"Supporting Document (Load Sheet / Certificate)", type:"document"},
   ],
   visitor:[
     {key:'date',label:'Date',type:'date'},
@@ -1180,6 +1185,7 @@ const FIELDS = {
     {key:'timeIn',label:'Time In',type:'time'},
     {key:'timeOut',label:'Time Out',type:'time'},
     {key:'notes',label:'Notes',type:'textarea'},
+    {key:"doc_visitor", label:"Supporting Document (Sign-In Sheet / ID Copy)", type:"document"},
   ],
   emp_profile:[
     {key:'firstName',label:'First Name',type:'text'},
